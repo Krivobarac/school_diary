@@ -16,7 +16,7 @@ import com.iktpreobuka.schooldiary.securities.Views;
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"email"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class SuperAdminEntity extends UserEntity{
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	@NotNull(message = "Email je obavezan!")
 	@Pattern(regexp = "^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}$", message = "Email nije ispravan!")
 	@JsonView(Views.User.class)

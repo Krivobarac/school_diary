@@ -1,5 +1,6 @@
 package com.iktpreobuka.schooldiary.controllers;
 
+import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.iktpreobuka.schooldiary.controllers.utils.ErrorMessage;
 import com.iktpreobuka.schooldiary.controllers.utils.RestError;
 import com.iktpreobuka.schooldiary.entities.AccountEntity;
 import com.iktpreobuka.schooldiary.entities.AddressEntity;
@@ -59,9 +62,12 @@ public class SuperAdminController {
 	private UserService userServ;
 	@Autowired
 	private RoleService roleServ;
+	@Autowired
+	private ErrorMessage errMsg;
 	
 	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity<?> addNewSuperAdmin(@Valid @RequestBody(required = false) SuperAdminDTO superAdminDto){
+	public ResponseEntity<?> addNewSuperAdmin(@Valid @RequestBody(required = false) SuperAdminDTO superAdminDto, BindingResult result){
+		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(superAdminDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		RoleEntity role = roleServ.getRoleByRole(IRole.ROLE_SUPER_ADMIN);
 		String password = superAdminDto.getFirstName().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + superAdminDto.getFirstName().substring(1, 2) + superAdminDto.getLastName().substring(1,2);
@@ -109,9 +115,10 @@ public class SuperAdminController {
 	public ResponseEntity<?> deleteSuperAdminById(@PathVariable Integer id) {
 		try {
 			SuperAdminEntity superAdmin = superAdminRepository.findById(id).get();
-			superAdminRepository.delete(superAdmin);
+			superAdmin.setDeletedAt(LocalDateTime.now());
+			superAdmin.setAccount(null);
+			superAdminRepository.save(superAdmin);
 			accountServ.delete(superAdmin.getAccount());
-			addressServ.delete(superAdmin.getAddress());
 			emailServ.deleteCredential(superAdmin.getEmail());
 			return new ResponseEntity<SuperAdminEntity>(superAdmin, HttpStatus.OK);
 		} catch (NoSuchElementException e) {
@@ -122,7 +129,8 @@ public class SuperAdminController {
 	}
 	
 	@RequestMapping(method = RequestMethod.PUT, value = "/{id}")
-	public ResponseEntity<?> updateSuperAdminById(@Valid @RequestBody(required = false) SuperAdminDTO superAdminDto, @PathVariable Integer id) {
+	public ResponseEntity<?> updateSuperAdminById(@Valid @RequestBody(required = false) SuperAdminDTO superAdminDto, BindingResult result, @PathVariable Integer id) {
+		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(superAdminDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		try {
 			SuperAdminEntity superAdmin = superAdminRepository.findById(id).get();
@@ -144,7 +152,8 @@ public class SuperAdminController {
 	}
 	
 	@RequestMapping(method = RequestMethod.PUT, value = "/forgottenCredential")
-	public ResponseEntity<?> forgottenCredential(@Valid @RequestBody(required = false) EmailDTO emailDto) {
+	public ResponseEntity<?> forgottenCredential(@Valid @RequestBody(required = false) EmailDTO emailDto, BindingResult result) {
+		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(emailDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		String password = emailDto.getEmail().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + emailDto.getEmail().substring(1, 2) + emailDto.getEmail().substring(0,1);
 		String userName =  emailDto.getEmail().substring(0, emailDto.getEmail().indexOf('@')) + "SA";
@@ -164,7 +173,8 @@ public class SuperAdminController {
 	}
 	
 	@RequestMapping(method = RequestMethod.PUT, value = "/changeCredential/{id}")
-	public ResponseEntity<?> changeCredential(@RequestBody(required = false) AccountDTO accounDto, @PathVariable Integer id) {
+	public ResponseEntity<?> changeCredential(@RequestBody(required = false) AccountDTO accounDto, BindingResult result, @PathVariable Integer id) {
+		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(accounDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		try {
 			SuperAdminEntity superAdmin = superAdminRepository.findById(id).get();

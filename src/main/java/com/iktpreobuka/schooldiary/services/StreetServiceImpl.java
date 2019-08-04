@@ -5,10 +5,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.iktpreobuka.schooldiary.entities.StreetEntity;
 import com.iktpreobuka.schooldiary.repositories.StreetRepository;
 
 @Service
+@JsonSerialize
 public class StreetServiceImpl implements StreetService {
 	@Autowired
 	private StreetRepository streetRepository;

@@ -17,6 +17,7 @@ import javax.persistence.Version;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -38,9 +39,11 @@ public class UserEntity{
 	protected Integer IdUser;
 	@NotBlank(message = "Ime ne sme biti prazno!")
 	@NotNull(message = "Ime je obavezno!")
+	@Size(min = 2, max = 24, message = "Ime mora sadrzati od {min} do {max} karaktera!")
 	@Column(length = 24, nullable = false)
 	@JsonView(Views.User.class)
 	protected String firstName;
+	@Size(min = 2, max = 24, message = "Prezime mora sadrzati od {min} do {max} karaktera!")
 	@NotBlank(message = "Prezime je obavezno!")
 	@NotNull(message = "Prezime je obavezno!")
 	@Column(length = 24, nullable = false)
@@ -62,9 +65,12 @@ public class UserEntity{
 	@JsonView(Views.Admin.class)
 	@JsonFormat(pattern = "hh:MM:ss dd.MM.yyyy", shape = JsonFormat.Shape.STRING)
 	protected LocalDateTime createdAt = LocalDateTime.now();
+	@JsonView(Views.Admin.class)
+	@JsonFormat(pattern = "hh:MM:ss dd.MM.yyyy", shape = JsonFormat.Shape.STRING)
+	protected LocalDateTime deletedAt = null;
 	@JsonView(Views.SuperAdmin.class)
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	@JoinColumn(name = "id_account", nullable = false)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
+	@JoinColumn(name = "id_account", unique = true)
 	@JsonManagedReference
 	protected AccountEntity account;
 	@JsonView(Views.User.class)
@@ -155,6 +161,14 @@ public class UserEntity{
 
 	public void setAddress(AddressEntity address) {
 		this.address = address;
+	}
+
+	public LocalDateTime getDeletedAt() {
+		return deletedAt;
+	}
+
+	public void setDeletedAt(LocalDateTime deletedAt) {
+		this.deletedAt = deletedAt;
 	}
 	
 }

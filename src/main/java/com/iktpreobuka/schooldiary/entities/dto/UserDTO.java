@@ -22,10 +22,10 @@ import com.iktpreobuka.schooldiary.securities.Views;
 
 public class UserDTO extends AddressDTO {
 	@NotNull(message = "Ime je obavezno!")
-	@Size(min = 2, max = 24, message = "Ime mora sadrzati od 2 do 24 karaktera!")
+	@Size(min = 2, max = 24, message = "Ime mora sadrzati od {min} do {max} karaktera!")
 	protected String firstName;
 	@NotNull(message = "Prezime je obavezno!")
-	@Size(min = 2, max = 24, message = "Prezime mora sadrzati od 2 do 24 karaktera!")
+	@Size(min = 2, max = 24, message = "Prezime mora sadrzati od {min} do {max} karaktera!")
 	protected String lastName;
 	@NotNull(message = "JMBG je obavezan!")
 	@Pattern(regexp = "^[0-9]{13}$",  message = "JMBG mora imati 13 cifara!")

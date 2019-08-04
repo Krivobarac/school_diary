@@ -37,25 +37,46 @@ public class AddressServiceImpl implements AddressService{
 		HouseNumberEntity houseNumber = houseNumberServ.save(new HouseNumberEntity(ae.getHouseNumber().getHouseNumber()));
 		AddressEntity address = addressRepository.findByStreetAndCityAndHouseNumber(street, city, houseNumber);
 		if(address == null) {
-			address = addressRepository.save(new AddressEntity(street, houseNumber, city));
+			address = new AddressEntity(street, houseNumber, city);
+			address = addressRepository.save(address);
 		}
 		return address;
 	}
 	
-	public void delete(AddressEntity ae) {
+	public AddressEntity delete(AddressEntity ae) {
 		AddressEntity address = addressRepository.findById(ae.getIdAddress()).orElse(null);
+		
 		if(address != null) {
+			Integer boroughs = cityServ.findByBorough(address.getCity().getBorough()).size();
+			Integer cities = addressRepository.findByCity(address.getCity()).size();
+			Integer streets = addressRepository.findByStreet(address.getStreet()).size();
+			Integer houseNumbers = addressRepository.findByHouseNumber(address.getHouseNumber()).size();
+			
+			CityEntity city = cityServ.getById(address.getCity().getIdCity());
+			StreetEntity street = streetServ.getById(address.getStreet().getIdStreet());
+			HouseNumberEntity houseNumber = houseNumberServ.getById(address.getHouseNumber().getIdNumber());
+			BoroughEntity borough = boroughServ.getById(address.getCity().getBorough().getIdBorough());
+			
+			if (boroughs > 1) {
+				borough = boroughServ.delete(borough);
+			}
+			if (cities > 1) {
+				city = cityServ.delete(city);
+			}
+			if (streets > 1) {
+				street = streetServ.delete(street);
+			}
+			if (houseNumbers > 1) {
+				houseNumber = houseNumberServ.delete(houseNumber);
+			}
 			Integer users = userRepository.findByAddress(address).size();
-			if (users < 1) {
+			if (users > 1) {
 				addressRepository.delete(address);
-				cityServ.delete(address.getCity());
-				streetServ.delete(address.getStreet());
-				houseNumberServ.delete(address.getHouseNumber());
 			}
 		}
+		return address;
 	}
 	
-	@Transactional
 	public AddressEntity getById(Integer ae) {
 		return addressRepository.findById(ae).orElse(null);
 	}
@@ -65,43 +86,38 @@ public class AddressServiceImpl implements AddressService{
 	}
 	
 	public AddressEntity update(Integer id, AddressEntity ae) {
-		AddressEntity address = null;
-		address = addressRepository.findById(id).get();
+		AddressEntity address = addressRepository.findById(id).get();
+		
 		
 		Integer boroughs = cityServ.findByBorough(address.getCity().getBorough()).size();
 		Integer cities = addressRepository.findByCity(address.getCity()).size();
 		Integer streets = addressRepository.findByStreet(address.getStreet()).size();
 		Integer houseNumbers = addressRepository.findByHouseNumber(address.getHouseNumber()).size();
 		
-		CityEntity city;
-		StreetEntity street;
-		HouseNumberEntity houseNumber;
-		BoroughEntity borough;
+		CityEntity city = cityServ.getById(address.getCity().getIdCity());
+		StreetEntity street = streetServ.getById(address.getStreet().getIdStreet());
+		HouseNumberEntity houseNumber = houseNumberServ.getById(address.getHouseNumber().getIdNumber());
+		BoroughEntity borough = boroughServ.getById(address.getCity().getBorough().getIdBorough());
 		
 		if (boroughs > 1) {
 			borough = boroughServ.save(new BoroughEntity(ae.getCity().getBorough().getNameBorough(), ae.getCity().getBorough().getNumberBorough()));
 		} else {
-			address.getCity().getBorough().setNameBorough(ae.getCity().getBorough().getNameBorough());
-			address.getCity().getBorough().setNumberBorough(ae.getCity().getBorough().getNumberBorough());
-			borough = boroughServ.update(address.getCity().getBorough().getIdBorough(), address.getCity().getBorough());
+			borough = boroughServ.update(borough.getIdBorough(), borough);
 		}
 		if (cities > 1) {
 			city = cityServ.save(new CityEntity(ae.getCity().getNameCity(), borough));
 		} else {
-			address.getCity().setNameCity(ae.getCity().getNameCity());
-			city = cityServ.update(address.getCity().getIdCity(), address.getCity());
+			city = cityServ.update(city.getIdCity(), city);
 		}
 		if (streets > 1) {
 			street = streetServ.save(new StreetEntity(ae.getStreet().getNameStreet()));
 		} else {
-			address.getStreet().setNameStreet(ae.getStreet().getNameStreet());
-			street = streetServ.update(address.getStreet().getIdStreet(), address.getStreet());
+			street = streetServ.update(street.getIdStreet(), street);
 		}
 		if (houseNumbers > 1) {
 			houseNumber = houseNumberServ.save(new HouseNumberEntity(ae.getHouseNumber().getHouseNumber()));
 		} else {
-			address.getHouseNumber().setHouseNumber(ae.getHouseNumber().getHouseNumber());
-			houseNumber = houseNumberServ.update(address.getHouseNumber().getIdNumber(), address.getHouseNumber());
+			houseNumber = houseNumberServ.update(houseNumber.getIdNumber(), houseNumber);
 		}
 		address.setCity(city);
 		address.setHouseNumber(houseNumber);
@@ -112,7 +128,5 @@ public class AddressServiceImpl implements AddressService{
 			address = addressRepository.findByStreetAndCityAndHouseNumber(street, city, houseNumber);
 		}
 		return address;
-		
-		
 	}
 }

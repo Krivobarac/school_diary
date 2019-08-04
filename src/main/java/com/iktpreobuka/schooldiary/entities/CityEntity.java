@@ -22,9 +22,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.iktpreobuka.schooldiary.securities.Views;
 
 @Entity
+@JsonSerialize
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"idCity", "nameCity"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class CityEntity{
@@ -40,7 +42,7 @@ public class CityEntity{
 	@Size(min = 2, max = 20, message = "Naziv grada mora biti od {min} do {max} karaktera!")
 	private String nameCity;
 	@JoinColumn(name = "id_borough", nullable = false, referencedColumnName = "idBorough")
-	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)
 	@JsonView(Views.User.class)
 	@JsonManagedReference
 	private BoroughEntity borough;

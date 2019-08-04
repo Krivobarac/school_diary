@@ -20,6 +20,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -53,7 +54,7 @@ public class BoroughEntity {
 	@Column(length = 11)
 	@JsonView(Views.SuperAdmin.class)
 	private Integer version = null;
-	@JsonIgnore
+	@JsonBackReference
 	@OneToMany(mappedBy = "borough", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
 	private List<CityEntity> cities = new ArrayList<>();
 

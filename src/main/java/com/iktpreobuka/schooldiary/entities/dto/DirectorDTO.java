@@ -9,7 +9,7 @@ public class DirectorDTO extends UserDTO {
 	@Pattern(regexp = "^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}$", message = "Email nije ispravan!")
 	private String email;
 	@NotNull(message = "Broj skole je obavezan!")
-	@Min(value = 9999999999L, message = "Broj skole mora imati minimum 11 cifara!")
+	@Min(value = 999999999L, message = "Broj skole mora imati minimum 10 cifara!")
 	private Long schoolNumber;
 
 	public DirectorDTO(String email, Long schoolNumber) {

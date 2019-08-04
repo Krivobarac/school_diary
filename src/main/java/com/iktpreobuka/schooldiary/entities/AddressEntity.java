@@ -18,15 +18,18 @@ import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.iktpreobuka.schooldiary.enums.ICountry;
 import com.iktpreobuka.schooldiary.securities.Views;
 
 @Entity
+@JsonSerialize
 @JsonPropertyOrder({"idAddress", "id_city", "street", "houseNumber", "city"})
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"id_city", "id_street", "id_house_number"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -36,24 +39,21 @@ public class AddressEntity {
 	@JsonView(Views.SuperAdmin.class)
 	@Column(length = 11, nullable = false, unique = true, updatable = false )
 	private Integer idAddress;
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "id_city", nullable = false)
 	@JsonView(Views.User.class)
 	@JsonManagedReference
 	private CityEntity city;
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "id_street", nullable = false)
 	@JsonView(Views.User.class)
 	@JsonManagedReference
 	private StreetEntity street;
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "id_house_number", nullable = false)
 	@JsonView(Views.User.class)
 	@JsonManagedReference
 	private HouseNumberEntity houseNumber;
-	@Transient
-	@JsonView(Views.User.class)
-	private ICountry country = ICountry.Srbija;
 	@JsonView(Views.SuperAdmin.class)
 	@Version
 	private Integer version = null;
@@ -129,8 +129,5 @@ public class AddressEntity {
 	public void setIdAddress(Integer idAddress) {
 		this.idAddress = idAddress;
 	}
-
-	public ICountry getCountry() {
-		return country;
-	}
+	
 }

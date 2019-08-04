@@ -15,33 +15,56 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.iktpreobuka.schooldiary.securities.Views;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"idSubject", "name"}))
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"idSubject", "subjectName"}))
 public class SubjectEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
+	@JsonView(Views.SuperAdmin.class)
 	private Integer idSubject;
-	@Column(length = 24, nullable = false, unique = true)
-	private String name;
-	@Column(length = 5, nullable = false)
-	private Integer fundWeaklyHours;
+	@JsonView(Views.User.class)
+	@Column(length = 100, nullable = false, unique = true)
+	@NotBlank(message = "Predmet je obavezan!")
+	private String subjectName;
+	@JsonView(Views.Admin.class)
+	@NotNull(message = "Obavezno polje!")
+	@Column(nullable = false)
+	private Boolean isActive = true;
+	@JsonView(Views.Admin.class)
+	@Column(nullable = false)
+	private Boolean optional = false;
 	@ManyToMany(mappedBy = "subjects")
+	@JsonIgnore
 	private List<TeacherEntity> teachers = new ArrayList<>();
-	@ManyToMany(mappedBy = "subjects")
-	private List<ClassEntity> classes = new ArrayList<>();
 	@OneToMany(mappedBy = "subject", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
+	@JsonIgnore
+	private List<ClassSubjectEntity> classes = new ArrayList<>();
+	@OneToMany(mappedBy = "subject", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
+	@JsonIgnore
 	private List<EvaluationEntity> evaluations = new ArrayList<>();
 	@Version
 	private Integer version = null;
-	@ManyToMany
-	@JoinTable(name = "school_year_subject", joinColumns = {@JoinColumn(name = "id_school_year", nullable = false)}, inverseJoinColumns = {@JoinColumn(name = "id_subject", nullable = false)})
-	private List<SchoolYearEntity> schoolYears = new ArrayList<>();
 	
 	public SubjectEntity() {}
+
+	public SubjectEntity(String subjectName, Boolean optional) {
+		super();
+		this.subjectName = subjectName;
+		this.optional = optional;
+	}
 
 	public Integer getIdSubject() {
 		return idSubject;
@@ -51,20 +74,12 @@ public class SubjectEntity {
 		this.idSubject = idSubject;
 	}
 
-	public String getName() {
-		return name;
+	public String getSubjectName() {
+		return subjectName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public Integer getFundWeaklyHours() {
-		return fundWeaklyHours;
-	}
-
-	public void setFundWeaklyHours(Integer fundWeaklyHours) {
-		this.fundWeaklyHours = fundWeaklyHours;
+	public void setSubjectName(String name) {
+		this.subjectName = name;
 	}
 
 	public List<TeacherEntity> getTeachers() {
@@ -75,11 +90,11 @@ public class SubjectEntity {
 		this.teachers = teachers;
 	}
 
-	public List<ClassEntity> getClasses() {
+	public List<ClassSubjectEntity> getClasses() {
 		return classes;
 	}
 
-	public void setClasses(List<ClassEntity> classes) {
+	public void setClasses(List<ClassSubjectEntity> classes) {
 		this.classes = classes;
 	}
 
@@ -97,6 +112,22 @@ public class SubjectEntity {
 
 	public void setVersion(Integer version) {
 		this.version = version;
+	}
+
+	public Boolean getIsActive() {
+		return isActive;
+	}
+
+	public void setIsActive(Boolean isActive) {
+		this.isActive = isActive;
+	}
+
+	public Boolean getOptional() {
+		return optional;
+	}
+
+	public void setOptional(Boolean optional) {
+		this.optional = optional;
 	}
 	
 }

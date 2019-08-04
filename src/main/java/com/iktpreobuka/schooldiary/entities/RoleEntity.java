@@ -20,6 +20,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.iktpreobuka.schooldiary.enums.IRole;
 import com.iktpreobuka.schooldiary.securities.Views;
@@ -38,7 +39,7 @@ public class RoleEntity {
 	@NotNull
 	@Enumerated(EnumType.STRING)
 	private IRole role;
-	@JsonIgnore
+	@JsonBackReference
 	@OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
 	private List<AccountEntity> accounts = new ArrayList<>();
 	

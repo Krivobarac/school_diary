@@ -1,5 +1,5 @@
 package com.iktpreobuka.schooldiary.enums;
 
 public enum IClass {
-	PRVI, DRUGI, TRECI, CETVRTI, PETI, SESTI, SEDMI, OSMI;
+	START, Prvi, Drugi, Treci, Cetvrti, Peti, Sesti, Sedmi, Osmi;
 }

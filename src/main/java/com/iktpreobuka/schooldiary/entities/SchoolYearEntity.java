@@ -16,6 +16,8 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
 
+import org.springframework.scheduling.annotation.Scheduled;
+
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"idSchoolYear", "schoolYear"}))
 public class SchoolYearEntity {
@@ -31,8 +33,6 @@ public class SchoolYearEntity {
 	private List<ClassEntity> classes = new ArrayList<>();
 	@Version
 	private Integer version = null;
-	@ManyToMany(mappedBy = "schoolYears")
-	private List<SubjectEntity> subjects = new ArrayList<>();
 	
 	public SchoolYearEntity() {}
 

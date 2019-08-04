@@ -1,6 +1,7 @@
 package com.iktpreobuka.schooldiary.controllers;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.util.Assert;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -74,17 +76,19 @@ public class DirectorController {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(directorDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		RoleEntity role = roleServ.getRoleByRole(IRole.ROLE_ADMIN);
-		String password = directorDto.getFirstName().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + directorDto.getFirstName().substring(1, 2) + directorDto.getLastName().substring(1,2);
+		String password = new BCryptPasswordEncoder().encode(directorDto.getFirstName().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + directorDto.getFirstName().substring(1, 2) + directorDto.getLastName().substring(1,2));
 		String userName =  directorDto.getEmail().substring(0, directorDto.getEmail().indexOf('@')) + "D";
 		long schoolNumber = directorDto.getSchoolNumber();
+		AccountEntity account = new AccountEntity(userName, password, role);
+		AddressEntity address = new AddressEntity(new StreetEntity(directorDto.getNameStreet()), new HouseNumberEntity(directorDto.getHouseNumber()), new CityEntity(directorDto.getNameCity(), new BoroughEntity(directorDto.getNameBorough(), directorDto.getNumberBorough())));
 		try {
 			Long schoolUniqeNumber = Long.parseLong((((int)directorRepository.count())+1) + "" + (new Random().nextInt(900)+100) + "" + LocalDateTime.now().getDayOfMonth() + "" + LocalDateTime.now().getMonthValue() + "" + LocalDateTime.now().getYear());	
 			SchoolEntity school = schoolRepository.findByNumberSchool(schoolNumber);
 			if (school == null) {return new ResponseEntity<RestError>(new RestError(550, "Exception occurred: Skola sa datim brojem ne postoji!"), HttpStatus.BAD_REQUEST);}
-			AddressEntity address = addressServ.save(new AddressEntity(new StreetEntity(directorDto.getNameStreet()), new HouseNumberEntity(directorDto.getHouseNumber()), new CityEntity(directorDto.getNameCity(), new BoroughEntity(directorDto.getNameBorough(), directorDto.getNumberBorough()))));
-			AccountEntity account = new AccountEntity(userName, new BCryptPasswordEncoder().encode(password), role);
-			account = accountServ.save(account);
-			DirectorEntity director = directorRepository.save(new DirectorEntity(directorDto.getFirstName(), directorDto.getLastName(), directorDto.getJmbg(), IGender. valueOf(directorDto.getGender()), account, address, directorDto.getEmail(), schoolUniqeNumber, school));
+			AccountEntity accountE = accountServ.save(account);
+			AddressEntity addressE = addressServ.save(address);
+			DirectorEntity director = new DirectorEntity(directorDto.getFirstName(), directorDto.getLastName(), directorDto.getJmbg(), IGender. valueOf(directorDto.getGender()), accountE, addressE, directorDto.getEmail(), schoolUniqeNumber, school);
+			director =	directorRepository.save(director);			
 			return new ResponseEntity<DirectorEntity>(director, HttpStatus.CREATED);
 		} catch (DataIntegrityViolationException e) {
 			return new ResponseEntity<RestError>(new RestError(550, "Exception occurred: Korisnik sa ovom rolom postoji"), HttpStatus.BAD_REQUEST);
@@ -125,9 +129,11 @@ public class DirectorController {
 	public ResponseEntity<?> deleteDirectorById(@PathVariable Integer id) {
 		try {
 			DirectorEntity director = directorRepository.findById(id).get();
-			directorRepository.delete(director);
-			accountServ.delete(director.getAccount());
-			addressServ.delete(director.getAddress());
+			AccountEntity account = director.getAccount();
+			director.setDeletedAt(LocalDateTime.now());
+			director.setAccount(null);
+			directorRepository.save(director);
+			accountServ.delete(account);
 			emailServ.deleteCredential(director.getEmail());
 			return new ResponseEntity<DirectorEntity>(director, HttpStatus.OK);
 		} catch (NumberFormatException e) {
@@ -233,7 +239,9 @@ public class DirectorController {
 				return new ResponseEntity<RestError>(new RestError(405, "Uneli ste nepostojecu skolu!"), HttpStatus.NOT_FOUND);
 			}
 			DirectorEntity oldDirector = directorRepository.findBySchool(school);
-			directorRepository.delete(oldDirector);
+			if (oldDirector != null) {
+				directorRepository.delete(oldDirector);
+			}
 			DirectorEntity director = directorRepository.findById(idD).get();
 			director.setSchool(school);
 			director = directorRepository.save(director);

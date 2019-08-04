@@ -56,20 +56,19 @@ public class SchoolEntity {
 	@JsonView(Views.User.class)
 	private String nameSchool;
 	@JoinColumn(name = "id_address", nullable = false)
-	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)
 	@JsonView(Views.User.class)
 	@JsonManagedReference
 	private AddressEntity address;
 	@Version
 	@JsonView(Views.SuperAdmin.class)
 	private Integer version = null;
-	@OneToOne(mappedBy = "school", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
-	@JsonView(Views.User.class)
-	@JsonBackReference
-	private DirectorEntity director;
-	@OneToOne(mappedBy = "school", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonIgnore
+	@OneToMany(mappedBy = "school", fetch = FetchType.LAZY)
+	private List<DirectorEntity> directors;
+	@OneToOne(mappedBy = "school")
 	@JsonView(Views.Teacher.class)
-	@JsonBackReference
+	@JsonIgnore
 	private AdminEntity admin;
 	@NotNull
 	@JsonView(Views.SuperAdmin.class)
@@ -162,19 +161,19 @@ public class SchoolEntity {
 		this.classes = classes;
 	}
 
-	public DirectorEntity getDirector() {
-		return director;
+	public List<DirectorEntity> getDirectors() {
+		return directors;
 	}
 
 	public void setDirector(DirectorEntity director) {
-		this.director = director;
+		this.directors.add(director);
 	}
 
-	public AdminEntity getAdmin() {
+	public AdminEntity getAdmins() {
 		return admin;
 	}
 
-	public void setAdmin(AdminEntity admin) {
+	public void setAdmins(AdminEntity admin) {
 		this.admin = admin;
 	}
 

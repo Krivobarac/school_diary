@@ -33,9 +33,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.iktpreobuka.schooldiary.securities.Views;
 
 @Entity
+@JsonSerialize
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"idStreet", "nameStreet"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class StreetEntity{

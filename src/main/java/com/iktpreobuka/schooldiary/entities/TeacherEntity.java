@@ -21,6 +21,8 @@ import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.iktpreobuka.schooldiary.enums.IGender;
@@ -39,13 +41,17 @@ public class TeacherEntity extends UserEntity {
 	@JsonView(Views.Teacher.class)
 	private String email;
 	@ManyToMany(mappedBy = "teachers")
+	@JsonIgnore
 	private List<SchoolEntity> schools = new ArrayList<>();
 	@OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
+	@JsonIgnore
 	private List<StudentEntity> students = new ArrayList<>();
 	@ManyToMany
+	@JsonIgnore
 	@JoinTable(name = "teacher_subject", joinColumns = {@JoinColumn(name = "id_teacher", nullable = false)}, inverseJoinColumns = {@JoinColumn(name = "id_subject", nullable = false)})
 	private List<SubjectEntity> subjects = new ArrayList<>();
 	@OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
+	@JsonIgnore
 	private List<EvaluationEntity> evaluations = new ArrayList<>();
 	
 	public TeacherEntity() {}
