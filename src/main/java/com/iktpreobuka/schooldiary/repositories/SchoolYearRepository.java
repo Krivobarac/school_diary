@@ -7,5 +7,5 @@ import com.iktpreobuka.schooldiary.entities.SchoolYearEntity;
 
 @Repository
 public interface SchoolYearRepository extends CrudRepository<SchoolYearEntity, Integer> {
-
+	SchoolYearEntity findBySchoolYear(String schoolYear);
 }

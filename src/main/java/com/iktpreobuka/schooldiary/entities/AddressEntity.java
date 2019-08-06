@@ -39,17 +39,17 @@ public class AddressEntity {
 	@JsonView(Views.SuperAdmin.class)
 	@Column(length = 11, nullable = false, unique = true, updatable = false )
 	private Integer idAddress;
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
 	@JoinColumn(name = "id_city", nullable = false)
 	@JsonView(Views.User.class)
 	@JsonManagedReference
 	private CityEntity city;
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
 	@JoinColumn(name = "id_street", nullable = false)
 	@JsonView(Views.User.class)
 	@JsonManagedReference
 	private StreetEntity street;
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
 	@JoinColumn(name = "id_house_number", nullable = false)
 	@JsonView(Views.User.class)
 	@JsonManagedReference

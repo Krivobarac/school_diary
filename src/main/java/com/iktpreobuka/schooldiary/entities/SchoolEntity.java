@@ -66,27 +66,25 @@ public class SchoolEntity {
 	@JsonIgnore
 	@OneToMany(mappedBy = "school", fetch = FetchType.LAZY)
 	private List<DirectorEntity> directors;
-	@OneToOne(mappedBy = "school")
-	@JsonView(Views.Teacher.class)
 	@JsonIgnore
-	private AdminEntity admin;
+	@OneToMany(mappedBy = "school", fetch = FetchType.LAZY)
+	private List<AdminEntity> admins;
 	@NotNull
 	@JsonView(Views.SuperAdmin.class)
 	@JsonFormat(pattern = "hh:MM:ss dd.MM.yyyy", shape = JsonFormat.Shape.STRING)
 	private LocalDateTime createdAt = LocalDateTime.now();
-	@ManyToMany
+	@ManyToMany(mappedBy = "schools")
 	@JsonIgnore
-	@JoinTable(name = "school_teacher", joinColumns = {@JoinColumn(name = "id_school", nullable = false)}, inverseJoinColumns = {@JoinColumn(name = "id_teacher", nullable = false)})
 	private List<TeacherEntity> teachers = new ArrayList<>();
 	@JsonIgnore
 	@OneToMany(mappedBy = "school", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
 	private List<StudentEntity> students = new ArrayList<>();
 	@JsonIgnore
 	@OneToMany(mappedBy = "school", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
-	private List<ClassEntity> classes = new ArrayList<>();
+	private List<ClassDepartmentEntity> classes = new ArrayList<>();
 	@JsonIgnore
 	@OneToMany(mappedBy = "school", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
-	private List<ClassEntity> users = new ArrayList<>();
+	private List<ClassDepartmentEntity> users = new ArrayList<>();
 	
 	public SchoolEntity() {}
 
@@ -153,11 +151,11 @@ public class SchoolEntity {
 		this.students = students;
 	}
 
-	public List<ClassEntity> getClasses() {
+	public List<ClassDepartmentEntity> getClasses() {
 		return classes;
 	}
 
-	public void setClasses(List<ClassEntity> classes) {
+	public void setClasses(List<ClassDepartmentEntity> classes) {
 		this.classes = classes;
 	}
 
@@ -169,12 +167,12 @@ public class SchoolEntity {
 		this.directors.add(director);
 	}
 
-	public AdminEntity getAdmins() {
-		return admin;
+	public List<AdminEntity> getAdmins() {
+		return admins;
 	}
 
 	public void setAdmins(AdminEntity admin) {
-		this.admin = admin;
+		this.admins.add(admin);
 	}
 
 	public LocalDateTime getCreatedAt() {
@@ -185,11 +183,11 @@ public class SchoolEntity {
 		this.createdAt = createdAt;
 	}
 
-	public List<ClassEntity> getUsers() {
+	public List<ClassDepartmentEntity> getUsers() {
 		return users;
 	}
 
-	public void setUsers(List<ClassEntity> users) {
+	public void setUsers(List<ClassDepartmentEntity> users) {
 		this.users = users;
 	}
 

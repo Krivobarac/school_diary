@@ -11,4 +11,5 @@ import com.iktpreobuka.schooldiary.entities.SubjectEntity;
 public interface SubjectRepository extends CrudRepository<SubjectEntity, Integer> {
 	List<SubjectEntity> findByIsActive(Boolean activity);
 	List<SubjectEntity> findByOptional(Boolean optionality);
+	SubjectEntity findBySubjectName(String subjectName);
 }

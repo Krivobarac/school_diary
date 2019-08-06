@@ -20,8 +20,11 @@ import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -29,38 +32,45 @@ import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.securities.Views;
 
 @Entity
-@JsonPropertyOrder({"schoolUniqeNumber", "email", "schoolClass", "teacher"})
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"schoolUniqeNumber", "email"}))
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"schoolUniqeNumber"}))
 public class TeacherEntity extends UserEntity {
 	@Column(nullable = false, unique = true, length = 10)
 	@JsonView(Views.User.class)
-	private Integer schoolUniqeNumber;
-	@Column(nullable = false, unique = true)
+	private Long schoolUniqeNumber;
+	@Column(nullable = false)
 	@NotNull(message = "Email je obavezan!")
 	@Pattern(regexp = "^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}$", message = "Email nije ispravan!")
 	@JsonView(Views.Teacher.class)
 	private String email;
-	@ManyToMany(mappedBy = "teachers")
-	@JsonIgnore
+	@NotNull(message = "Predmet je obavezan")
+	@ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+	@JoinColumn(nullable = false, name = "id_subject")
+	@JsonManagedReference
+	private SubjectEntity subject;
+	@ManyToMany()
+	@JsonBackReference
+	@JoinTable(uniqueConstraints = @UniqueConstraint(columnNames = {"id_teacher", "id_school"}), name = "teacher_school", joinColumns = {@JoinColumn(name = "id_teacher", nullable = false)}, inverseJoinColumns = {@JoinColumn(name = "id_school", nullable = false)})
 	private List<SchoolEntity> schools = new ArrayList<>();
-	@OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
-	@JsonIgnore
-	private List<StudentEntity> students = new ArrayList<>();
-	@ManyToMany
-	@JsonIgnore
-	@JoinTable(name = "teacher_subject", joinColumns = {@JoinColumn(name = "id_teacher", nullable = false)}, inverseJoinColumns = {@JoinColumn(name = "id_subject", nullable = false)})
-	private List<SubjectEntity> subjects = new ArrayList<>();
 	@OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
 	@JsonIgnore
 	private List<EvaluationEntity> evaluations = new ArrayList<>();
 	
 	public TeacherEntity() {}
 
-	public Integer getSchoolUniqeNumber() {
+	public TeacherEntity(String firstName, String lastName, String jmbg, IGender gender, AccountEntity account, AddressEntity address, Long schoolUniqeNumber, String email, SubjectEntity subject, SchoolEntity school) {
+		super(firstName, lastName, jmbg, gender, account, address);
+		this.schoolUniqeNumber = schoolUniqeNumber;
+		this.email = email;
+		this.subject = subject;
+		this.schools.add(school);
+	}
+
+	public Long getSchoolUniqeNumber() {
 		return schoolUniqeNumber;
 	}
 
-	public void setSchoolUniqeNumber(Integer schoolUniqeNumber) {
+	public void setSchoolUniqeNumber(Long schoolUniqeNumber) {
 		this.schoolUniqeNumber = schoolUniqeNumber;
 	}
 	
@@ -68,24 +78,8 @@ public class TeacherEntity extends UserEntity {
 		return schools;
 	}
 
-	public void setSchools(List<SchoolEntity> schools) {
-		this.schools = schools;
-	}
-
-	public List<StudentEntity> getStudents() {
-		return students;
-	}
-
-	public void setStudents(List<StudentEntity> students) {
-		this.students = students;
-	}
-
-	public List<SubjectEntity> getSubjects() {
-		return subjects;
-	}
-
-	public void setSubjects(List<SubjectEntity> subjects) {
-		this.subjects = subjects;
+	public void setSchools(SchoolEntity school) {
+		this.schools.add(school);
 	}
 
 	public List<EvaluationEntity> getEvaluations() {
@@ -102,6 +96,14 @@ public class TeacherEntity extends UserEntity {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public SubjectEntity getSubject() {
+		return subject;
+	}
+
+	public void setSubject(SubjectEntity subject) {
+		this.subject = subject;
 	}
 
 }

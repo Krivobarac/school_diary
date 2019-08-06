@@ -23,11 +23,14 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.iktpreobuka.schooldiary.securities.Views;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"idSubject", "subjectName"}))
 public class SubjectEntity {
 	@Id
@@ -46,7 +49,7 @@ public class SubjectEntity {
 	@JsonView(Views.Admin.class)
 	@Column(nullable = false)
 	private Boolean optional = false;
-	@ManyToMany(mappedBy = "subjects")
+	@OneToMany(mappedBy = "subject")
 	@JsonIgnore
 	private List<TeacherEntity> teachers = new ArrayList<>();
 	@OneToMany(mappedBy = "subject", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})

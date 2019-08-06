@@ -1,8 +1,6 @@
 package com.iktpreobuka.schooldiary.controllers;
 
-import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
@@ -14,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.util.Assert;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,19 +28,23 @@ import com.iktpreobuka.schooldiary.entities.AddressEntity;
 import com.iktpreobuka.schooldiary.entities.AdminEntity;
 import com.iktpreobuka.schooldiary.entities.BoroughEntity;
 import com.iktpreobuka.schooldiary.entities.CityEntity;
-import com.iktpreobuka.schooldiary.entities.DirectorEntity;
+import com.iktpreobuka.schooldiary.entities.AdminEntity;
 import com.iktpreobuka.schooldiary.entities.HouseNumberEntity;
 import com.iktpreobuka.schooldiary.entities.RoleEntity;
 import com.iktpreobuka.schooldiary.entities.SchoolEntity;
 import com.iktpreobuka.schooldiary.entities.StreetEntity;
+import com.iktpreobuka.schooldiary.entities.SuperAdminEntity;
 import com.iktpreobuka.schooldiary.entities.UserEntity;
 import com.iktpreobuka.schooldiary.entities.dto.AccountDTO;
+import com.iktpreobuka.schooldiary.entities.dto.AdminDTO;
 import com.iktpreobuka.schooldiary.entities.dto.DirectorDTO;
 import com.iktpreobuka.schooldiary.entities.dto.EmailDTO;
+import com.iktpreobuka.schooldiary.entities.dto.SuperAdminDTO;
 import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.enums.IRole;
-import com.iktpreobuka.schooldiary.repositories.DirectorRepository;
+import com.iktpreobuka.schooldiary.repositories.AdminRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolRepository;
+import com.iktpreobuka.schooldiary.repositories.SuperAdminRepository;
 import com.iktpreobuka.schooldiary.securities.Views;
 import com.iktpreobuka.schooldiary.services.AccountService;
 import com.iktpreobuka.schooldiary.services.AddressService;
@@ -52,10 +53,12 @@ import com.iktpreobuka.schooldiary.services.RoleService;
 import com.iktpreobuka.schooldiary.services.UserService;
 
 @RestController
-@RequestMapping("/schoolDiary/users/director")
-public class DirectorController {
+@RequestMapping("/schoolDiary/users/admin")
+public class AdminController {
 	@Autowired
-	private DirectorRepository directorRepository;
+	private AdminRepository adminRepository;
+	@Autowired
+	private SchoolRepository schoolRepository;
 	@Autowired
 	private EmailService emailServ;
 	@Autowired
@@ -67,43 +70,41 @@ public class DirectorController {
 	@Autowired
 	private RoleService roleServ;
 	@Autowired
-	private SchoolRepository schoolRepository;
-	@Autowired
 	private ErrorMessage errMsg;
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN"})
+	@Secured(value = {"ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity<?> addNewDirector(@Valid @RequestBody(required = false) DirectorDTO directorDto, BindingResult result){
+	public ResponseEntity<?> addNewAdmin(@Valid @RequestBody(required = false) AdminDTO adminDto, BindingResult result){
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
-		if(directorDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
+		if(adminDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		RoleEntity role = roleServ.getRoleByRole(IRole.ROLE_ADMIN);
-		String password = directorDto.getFirstName().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + directorDto.getFirstName().substring(1, 2) + directorDto.getLastName().substring(1,2);
-		String userName =  directorDto.getEmail().substring(0, directorDto.getEmail().indexOf('@')) + "D";
-		long schoolNumber = directorDto.getSchoolNumber();
+		String password = adminDto.getFirstName().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + adminDto.getFirstName().substring(1, 2) + adminDto.getLastName().substring(1,2);
+		String userName =  adminDto.getEmail().substring(0, adminDto.getEmail().indexOf('@')) + "A";
+		long schoolNumber = adminDto.getSchoolNumber();
 		AccountEntity account = new AccountEntity(userName, new BCryptPasswordEncoder().encode(password), role);
-		AddressEntity address = new AddressEntity(new StreetEntity(directorDto.getNameStreet()), new HouseNumberEntity(directorDto.getHouseNumber()), new CityEntity(directorDto.getNameCity(), new BoroughEntity(directorDto.getNameBorough(), directorDto.getNumberBorough())));
+		AddressEntity address = new AddressEntity(new StreetEntity(adminDto.getNameStreet()), new HouseNumberEntity(adminDto.getHouseNumber()), new CityEntity(adminDto.getNameCity(), new BoroughEntity(adminDto.getNameBorough(), adminDto.getNumberBorough())));
 		try {
-			Long schoolUniqeNumber = Long.parseLong((((int)directorRepository.count())+1) + "" + (new Random().nextInt(900)+100) + "" + LocalDateTime.now().getDayOfMonth() + "" + LocalDateTime.now().getMonthValue() + "" + LocalDateTime.now().getYear());	
+			Long schoolUniqeNumber = Long.parseLong((((int)adminRepository.count())+1) + "" + (new Random().nextInt(900)+100) + "" + LocalDateTime.now().getDayOfMonth() + "" + LocalDateTime.now().getMonthValue() + "" + LocalDateTime.now().getYear());	
 			SchoolEntity school = schoolRepository.findByNumberSchool(schoolNumber);
 			if (school == null) {return new ResponseEntity<RestError>(new RestError(550, "Exception occurred: Skola sa datim brojem ne postoji!"), HttpStatus.BAD_REQUEST);}
-			DirectorEntity oldDirector = directorRepository.findBySchool(school);
-			if (oldDirector != null) {
-				AccountEntity oldAccount = oldDirector.getAccount();
-				String username = oldDirector.getAccount().getUserName();
-				oldDirector.setAccount(null);
-				oldDirector.setDeletedAt(LocalDateTime.now());
-				directorRepository.save(oldDirector);
+			AdminEntity oldAdmin = adminRepository.findBySchool(school);
+			if (oldAdmin != null) {
+				AccountEntity oldAccount = oldAdmin.getAccount();
+				String username = oldAdmin.getAccount().getUserName();
+				oldAdmin.setAccount(null);
+				oldAdmin.setDeletedAt(LocalDateTime.now());
+				adminRepository.save(oldAdmin);
 				accountServ.delete(oldAccount);
-				emailServ.deleteCredential(oldDirector.getEmail(), username);
+				emailServ.deleteCredential(oldAdmin.getEmail(), username);
 			}
 			AccountEntity accountE = accountServ.save(account);
 			AddressEntity addressE = addressServ.save(address);
-			DirectorEntity director = new DirectorEntity(directorDto.getFirstName(), directorDto.getLastName(), directorDto.getJmbg(), IGender. valueOf(directorDto.getGender()), accountE, addressE, directorDto.getEmail(), schoolUniqeNumber, school);
-			director =	directorRepository.save(director);
-			if(director != null) { 
-				emailServ.sendCredential(director.getEmail(), userName, password, director.getIdUser(), "director");
+			AdminEntity admin = new AdminEntity(adminDto.getFirstName(), adminDto.getLastName(), adminDto.getJmbg(), IGender. valueOf(adminDto.getGender()), accountE, addressE, adminDto.getEmail(), schoolUniqeNumber, school);
+			admin =	adminRepository.save(admin);
+			if(admin != null) { 
+				emailServ.sendCredential(admin.getEmail(), userName, password, admin.getIdUser(), "admin");
 			}
-			return new ResponseEntity<DirectorEntity>(director, HttpStatus.CREATED);
+			return new ResponseEntity<AdminEntity>(admin, HttpStatus.CREATED);
 		} catch (DataIntegrityViolationException e) {
 			return new ResponseEntity<RestError>(new RestError(550, "Exception occurred: Korisnik sa ovom rolom postoji"), HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
@@ -111,15 +112,15 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN"})
+	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
-	public ResponseEntity<?> getAllDirectors(Principal principal) {
+	public ResponseEntity<?> getAllAdmins() {
 		try {
-			Iterable<DirectorEntity> directors = directorRepository.findAll();
-			if(!directors.iterator().hasNext()) {
+			Iterable<AdminEntity> admins = adminRepository.findAll();
+			if(!admins.iterator().hasNext()) {
 				return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
 			}
-			return new ResponseEntity<Iterable<DirectorEntity>>(directors, HttpStatus.OK);
+			return new ResponseEntity<Iterable<AdminEntity>>(admins, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -127,9 +128,9 @@ public class DirectorController {
 	
 	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
-	public ResponseEntity<?> getDirectorById(@PathVariable Integer id) {
+	public ResponseEntity<?> getAdminById(@PathVariable Integer id) {
 		try {
-			return new ResponseEntity<DirectorEntity>(directorRepository.findById(id).get(), HttpStatus.OK);
+			return new ResponseEntity<AdminEntity>(adminRepository.findById(id).get(), HttpStatus.OK);
 		} catch (NoSuchElementException e) {
 			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
@@ -137,19 +138,19 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN"})
+	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
-	public ResponseEntity<?> deleteDirectorById(@PathVariable Integer id) {
+	public ResponseEntity<?> deleteAdminById(@PathVariable Integer id) {
 		try {
-			DirectorEntity director = directorRepository.findById(id).get();
-			AccountEntity account = director.getAccount();
-			director.setDeletedAt(LocalDateTime.now());
-			String username = director.getAccount().getUserName();
-			director.setAccount(null);
-			directorRepository.save(director);
+			AdminEntity admin = adminRepository.findById(id).get();
+			AccountEntity account = admin.getAccount();
+			admin.setDeletedAt(LocalDateTime.now());
+			String username = admin.getAccount().getUserName();
+			admin.setAccount(null);
+			adminRepository.save(admin);
 			accountServ.delete(account);
-			emailServ.deleteCredential(director.getEmail(), username);
-			return new ResponseEntity<DirectorEntity>(director, HttpStatus.OK);
+			emailServ.deleteCredential(admin.getEmail(), username);
+			return new ResponseEntity<AdminEntity>(admin, HttpStatus.OK);
 		} catch (NumberFormatException e) {
 			return new ResponseEntity<RestError>(new RestError(501, "Morate uneti brojcanu vrednost: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (NoSuchElementException e) {
@@ -161,22 +162,22 @@ public class DirectorController {
 	
 	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/{id}")
-	public ResponseEntity<?> updateDirectorById(@Valid @RequestBody(required = false) DirectorDTO directorDto, BindingResult result, @PathVariable Integer id) {
+	public ResponseEntity<?> updateDirectorById(@Valid @RequestBody(required = false) AdminDTO adminDto, BindingResult result, @PathVariable Integer id) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
-		if(directorDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
+		if(adminDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		try {
-			DirectorEntity director = directorRepository.findById(id).get();
-			Integer addressId = directorRepository.findById(id).get().getAddress().getIdAddress();
-			AddressEntity address = new AddressEntity(new StreetEntity(directorDto.getNameStreet()), new HouseNumberEntity(directorDto.getHouseNumber()), new CityEntity(directorDto.getNameCity(), new BoroughEntity(directorDto.getNameBorough(), directorDto.getNumberBorough())));
-			director.setFirstName(directorDto.getFirstName());
-			director.setLastName(directorDto.getLastName());
-			director.setJmbg(directorDto.getJmbg());;
-			director.setGender(IGender.valueOf(directorDto.getGender()));
-			director.setEmail(directorDto.getEmail());
+			AdminEntity admin = adminRepository.findById(id).get();
+			Integer addressId = adminRepository.findById(id).get().getAddress().getIdAddress();
+			AddressEntity address = new AddressEntity(new StreetEntity(adminDto.getNameStreet()), new HouseNumberEntity(adminDto.getHouseNumber()), new CityEntity(adminDto.getNameCity(), new BoroughEntity(adminDto.getNameBorough(), adminDto.getNumberBorough())));
+			admin.setFirstName(adminDto.getFirstName());
+			admin.setLastName(adminDto.getLastName());
+			admin.setJmbg(adminDto.getJmbg());;
+			admin.setGender(IGender.valueOf(adminDto.getGender()));
+			admin.setEmail(adminDto.getEmail());
 			address = addressServ.update(addressId, address);
-			director.setAddress(address);
-			director = directorRepository.save(director);
-			return new ResponseEntity<DirectorEntity>(director, HttpStatus.OK);
+			admin.setAddress(address);
+			admin = adminRepository.save(admin);
+			return new ResponseEntity<AdminEntity>(admin, HttpStatus.OK);
 		} catch (NumberFormatException e) {
 			return new ResponseEntity<RestError>(new RestError(501, "Morate uneti brojcanu vrednost: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (NoSuchElementException e) {
@@ -186,7 +187,7 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/forgottenCredential")
 	public ResponseEntity<?> forgottenCredential(@Valid @RequestBody(required = false) EmailDTO emailDto, BindingResult result) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -194,13 +195,13 @@ public class DirectorController {
 		String password = emailDto.getEmail().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + emailDto.getEmail().substring(1, 2) + emailDto.getEmail().substring(0,1);
 		String userName =  emailDto.getEmail().substring(0, emailDto.getEmail().indexOf('@')) + "SA";
 		try {
-			DirectorEntity director = directorRepository.findByEmail(emailDto.getEmail());
-			UserEntity user = userServ.getById(director);
+			AdminEntity admin = adminRepository.findByEmail(emailDto.getEmail());
+			UserEntity user = userServ.getById(admin);
 			user.getAccount().setUserName(userName);
 			user.getAccount().setPassword(password);	
 			accountServ.updateById(user.getAccount().getIdAccount(), user.getAccount());
-			emailServ.sendGenerateCredential(director.getEmail(), userName, password, director.getIdUser(), "director");
-			return new ResponseEntity<DirectorEntity>(director, HttpStatus.OK);
+			emailServ.sendGenerateCredential(admin.getEmail(), userName, password, admin.getIdUser(), "admin");
+			return new ResponseEntity<AdminEntity>(admin, HttpStatus.OK);
 		} catch (NoSuchElementException e) {
 			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
@@ -214,11 +215,11 @@ public class DirectorController {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(accounDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		try {
-			DirectorEntity director = directorRepository.findById(id).get();
-			director.getAccount().setPassword(accounDto.getPassword());
-			director.getAccount().setUserName(accounDto.getUserName());
-			emailServ.changeCredential(director.getEmail(), accounDto.getUserName(), accounDto.getPassword(), director.getIdUser(), "director");
-			return new ResponseEntity<DirectorEntity>(directorRepository.save(director), HttpStatus.OK);
+			AdminEntity admin = adminRepository.findById(id).get();
+			admin.getAccount().setPassword(accounDto.getPassword());
+			admin.getAccount().setUserName(accounDto.getUserName());
+			emailServ.changeCredential(admin.getEmail(), accounDto.getUserName(), accounDto.getPassword(), admin.getIdUser(), "admin");
+			return new ResponseEntity<AdminEntity>(adminRepository.save(admin), HttpStatus.OK);
 		} catch (NumberFormatException e) {
 			return new ResponseEntity<RestError>(new RestError(501, "Morate uneti brojcanu vrednost: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (NoSuchElementException e) {
@@ -230,20 +231,20 @@ public class DirectorController {
 	
 	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_USER"})
 	@RequestMapping(method = RequestMethod.GET, value = "/school")
-	public ResponseEntity<?> getDirectorBySchool(@RequestParam(name = "idSchool") String id) {
+	public ResponseEntity<?> getAdminBySchool(@RequestParam(name = "idSchool") String id) {
 		try {
 			SchoolEntity school = schoolRepository.findById(Integer.parseInt(id)).orElse(null);
 			if (school == null) {
 				return new ResponseEntity<RestError>(new RestError(405, "Uneli ste nepostojecu skolu!"), HttpStatus.NOT_FOUND);
 			}
-			DirectorEntity director = directorRepository.findBySchool(school);
-			if(director == null) {
+			AdminEntity admin = adminRepository.findBySchool(school);
+			if(admin == null) {
 				return new ResponseEntity<RestError>(new RestError(405, "Nema rezultata!"), HttpStatus.NOT_FOUND);
 			}
-			return new ResponseEntity<DirectorEntity>(director, HttpStatus.OK);
+			return new ResponseEntity<AdminEntity>(admin, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	 
+	
 }

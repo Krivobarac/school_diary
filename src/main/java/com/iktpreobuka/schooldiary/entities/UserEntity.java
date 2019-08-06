@@ -13,6 +13,8 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -29,8 +31,9 @@ import com.iktpreobuka.schooldiary.securities.Views;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
-@JsonPropertyOrder({"IdUser", "firstName", "lastName", "email", "schoolUniqeNumber", "jmbg", "gender", "createdAt", "account", "address"})
+@JsonPropertyOrder({"IdUser", "firstName", "lastName", "email", "schoolUniqeNumber", "grade", "jmbg", "gender", "createdAt", "deletedAt", "account", "address", "subject", "school", "schoolYear", "schoolClass", "teacher"})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"IdUser"}))
 public class UserEntity{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -76,7 +79,7 @@ public class UserEntity{
 	@JsonView(Views.User.class)
 	@JsonManagedReference
     @JoinColumn(name="id_address", nullable = false)
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
 	protected AddressEntity address;
 
 	public UserEntity() {}

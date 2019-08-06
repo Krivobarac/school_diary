@@ -15,9 +15,12 @@ import javax.persistence.Version;
 
 import com.iktpreobuka.schooldiary.enums.IMark;
 import com.iktpreobuka.schooldiary.enums.ISemester;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.iktpreobuka.schooldiary.enums.IClass;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"idEvalueted"}))
 public class EvaluationEntity {
 	@Id
@@ -25,6 +28,7 @@ public class EvaluationEntity {
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
 	private Integer idEvalueted;
 	@JoinColumn(nullable = false)
+	@JsonManagedReference
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	private StudentEntity student;
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)

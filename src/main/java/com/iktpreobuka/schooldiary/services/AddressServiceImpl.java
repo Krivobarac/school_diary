@@ -38,8 +38,10 @@ public class AddressServiceImpl implements AddressService{
 		AddressEntity address = addressRepository.findByStreetAndCityAndHouseNumber(street, city, houseNumber);
 		if(address == null) {
 			address = new AddressEntity(street, houseNumber, city);
-			address = addressRepository.save(address);
-		}
+			if (address.getIdAddress() == null) {
+				address = addressRepository.save(address);
+			}
+		}	
 		return address;
 	}
 	

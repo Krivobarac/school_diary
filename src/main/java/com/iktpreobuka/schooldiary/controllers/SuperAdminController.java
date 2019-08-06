@@ -75,9 +75,9 @@ public class SuperAdminController {
 		try {
 			AddressEntity address = addressServ.save(new AddressEntity(new StreetEntity(superAdminDto.getNameStreet()), new HouseNumberEntity(superAdminDto.getHouseNumber()), new CityEntity(superAdminDto.getNameCity(), new BoroughEntity(superAdminDto.getNameBorough(), superAdminDto.getNumberBorough()))));
 			AccountEntity account = accountServ.save(new AccountEntity(userName, new BCryptPasswordEncoder().encode(password), role));
-			SuperAdminEntity superAdmin = superAdminRepository.save(new SuperAdminEntity(superAdminDto.getFirstName(), superAdminDto.getLastName(), superAdminDto.getJmbg(), IGender. valueOf(superAdminDto.getGender()), account, address, superAdminDto.getEmail()));
+			SuperAdminEntity superAdmin = superAdminRepository.save(new SuperAdminEntity(superAdminDto.getFirstName(), superAdminDto.getLastName(), superAdminDto.getJmbg(), IGender.valueOf(superAdminDto.getGender()), account, address, superAdminDto.getEmail()));
 			if(superAdmin!= null) { 
-				emailServ.sendCredential(superAdminDto.getEmail(), userName, password, superAdmin.getIdUser());
+				emailServ.sendCredential(superAdminDto.getEmail(), userName, password, superAdmin.getIdUser(), "sa");
 			}
 			return new ResponseEntity<SuperAdminEntity>(superAdmin, HttpStatus.CREATED);
 		} catch (DataIntegrityViolationException e) {
@@ -116,10 +116,11 @@ public class SuperAdminController {
 		try {
 			SuperAdminEntity superAdmin = superAdminRepository.findById(id).get();
 			superAdmin.setDeletedAt(LocalDateTime.now());
+			String username = superAdmin.getAccount().getUserName();
 			superAdmin.setAccount(null);
 			superAdminRepository.save(superAdmin);
 			accountServ.delete(superAdmin.getAccount());
-			emailServ.deleteCredential(superAdmin.getEmail());
+			emailServ.deleteCredential(superAdmin.getEmail(), username);
 			return new ResponseEntity<SuperAdminEntity>(superAdmin, HttpStatus.OK);
 		} catch (NoSuchElementException e) {
 			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
@@ -163,7 +164,7 @@ public class SuperAdminController {
 			user.getAccount().setUserName(userName);
 			user.getAccount().setPassword(password);	
 			accountServ.updateById(user.getAccount().getIdAccount(), user.getAccount());
-			emailServ.sendGenerateCredential(superAdmin.getEmail(), userName, password, superAdmin.getIdUser());
+			emailServ.sendGenerateCredential(superAdmin.getEmail(), userName, password, superAdmin.getIdUser(), "sa");
 			return new ResponseEntity<SuperAdminEntity>(superAdmin, HttpStatus.OK);
 		} catch (NoSuchElementException e) {
 			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
@@ -180,7 +181,7 @@ public class SuperAdminController {
 			SuperAdminEntity superAdmin = superAdminRepository.findById(id).get();
 			superAdmin.getAccount().setPassword(accounDto.getPassword());
 			superAdmin.getAccount().setUserName(accounDto.getUserName());
-			emailServ.changeCredential(superAdmin.getEmail(), accounDto.getUserName(), accounDto.getPassword(), superAdmin.getIdUser());
+			emailServ.changeCredential(superAdmin.getEmail(), accounDto.getUserName(), accounDto.getPassword(), superAdmin.getIdUser(), "sa");
 			return new ResponseEntity<SuperAdminEntity>(superAdminRepository.save(superAdmin), HttpStatus.OK);
 		} catch (NoSuchElementException e) {
 			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);

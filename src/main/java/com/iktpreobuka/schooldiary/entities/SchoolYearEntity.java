@@ -18,19 +18,29 @@ import javax.persistence.Version;
 
 import org.springframework.scheduling.annotation.Scheduled;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.iktpreobuka.schooldiary.securities.Views;
+
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"idSchoolYear", "schoolYear"}))
 public class SchoolYearEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
+	@JsonView(Views.SuperAdmin.class)
 	private Integer idSchoolYear;
 	@Column(length = 24, nullable = false, unique = true)
+	@JsonView(Views.User.class)
 	private String schoolYear;
+	@JsonIgnore
 	@OneToMany(mappedBy = "schoolYear", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
 	private List<StudentEntity> students = new ArrayList<>();
 	@OneToMany(mappedBy = "schoolYear", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
-	private List<ClassEntity> classes = new ArrayList<>();
+	@JsonIgnore
+	private List<ClassDepartmentEntity> classes = new ArrayList<>();
 	@Version
 	private Integer version = null;
 	
@@ -60,11 +70,11 @@ public class SchoolYearEntity {
 		this.students = students;
 	}
 
-	public List<ClassEntity> getClasses() {
+	public List<ClassDepartmentEntity> getClasses() {
 		return classes;
 	}
 
-	public void setClasses(List<ClassEntity> classes) {
+	public void setClasses(List<ClassDepartmentEntity> classes) {
 		this.classes = classes;
 	}
 

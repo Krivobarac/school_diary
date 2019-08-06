@@ -20,6 +20,9 @@ import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -27,18 +30,24 @@ import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.securities.Views;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"email"}))
+@Table
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ParentEntity extends UserEntity{
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	@NotNull(message = "Email je obavezan!")
 	@Pattern(regexp = "^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}$", message = "Email nije ispravan!")
 	@JsonView(Views.User.class)
 	private String email;
-	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
-	@JoinTable(name = "parent_student", joinColumns = {@JoinColumn(name = "id_parent", nullable = false)}, inverseJoinColumns = {@JoinColumn(name = "id_student", nullable = false)})
+	@ManyToMany(mappedBy = "parents")
+	@JsonManagedReference
 	private List<StudentEntity> students = new ArrayList<>();
 	
 	public ParentEntity() {}
+
+	public ParentEntity(String firstName, String lastName, String jmbg, IGender gender, AccountEntity account, AddressEntity address, String email) {
+		super(firstName, lastName, jmbg, gender, account, address);
+		this.email = email;
+	}
 
 	public List<StudentEntity> getStudents() {
 		return students;

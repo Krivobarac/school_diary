@@ -15,6 +15,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
@@ -23,26 +24,26 @@ import javax.validation.constraints.NotNull;
 import com.iktpreobuka.schooldiary.enums.IDepartment;
 import com.iktpreobuka.schooldiary.securities.Views;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.iktpreobuka.schooldiary.enums.IClass;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"idClass"}))
-public class ClassEntity {
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"idClassDepartment"}))
+public class ClassDepartmentEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
 	@JsonView(Views.SuperAdmin.class)
-	private Integer idClass;
+	private Integer idClassDepartment;
 	@Column(length = 11, nullable = false)
 	@NotNull(message = "Razred je obavezan!")
-	@JsonManagedReference
 	@JsonView(Views.User.class)
 	private IClass schoolClass;
-	@Column(length = 11, nullable = false)
-	@NotNull(message = "Odeljenje je obavezno!")
-	@JsonManagedReference
+	@Column(length = 11)
 	@JsonView(Views.User.class)
 	private IDepartment department;
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
@@ -57,20 +58,32 @@ public class ClassEntity {
 	@JsonManagedReference
 	@JsonView(Views.User.class)
 	private SchoolYearEntity schoolYear;
-	@OneToMany(mappedBy = "schoolClass", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
-	@JsonBackReference
+	@JsonIgnore
+	@OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
+	@JoinTable(uniqueConstraints = @UniqueConstraint(columnNames = {"class_department_id", "student_id"}), name = "class_department_student", 
+    joinColumns = { @JoinColumn(name = "class_department_id", referencedColumnName = "idClassDepartment") },
+    inverseJoinColumns = { @JoinColumn(name = "student_id", referencedColumnName = "id_user") })
 	private List<StudentEntity> students = new ArrayList<>();
 	@Version
 	private Integer version;
 	
-	public ClassEntity() {}
+	public ClassDepartmentEntity() {}
 
-	public Integer getIdClass() {
-		return idClass;
+	public ClassDepartmentEntity(IClass schoolClass, IDepartment department, SchoolEntity school, SchoolYearEntity schoolYear, List<StudentEntity> students) {
+		super();
+		this.schoolClass = schoolClass;
+		this.department = department;
+		this.school = school;
+		this.schoolYear = schoolYear;
+		this.students = students;
 	}
 
-	public void setIdClass(Integer idClass) {
-		this.idClass = idClass;
+	public Integer getIdClassDepartment() {
+		return idClassDepartment;
+	}
+
+	public void setIdClassDepartment(Integer idClassDepartment) {
+		this.idClassDepartment = idClassDepartment;
 	}
 
 	public IClass getSchoolClass() {

@@ -9,6 +9,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
@@ -28,11 +29,13 @@ public class DirectorEntity extends UserEntity{
 	@Pattern(regexp = "^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}$", message = "Email nije ispravan!")
 	@JsonView(Views.User.class)
 	private String email;
+	@NotNull(message = "Broj skole je obavezan!")
+	@Min(value = 999999999L, message = "Broj skole mora imati minimum 10 cifara!")
 	@Column(nullable = false, unique = true, length = 10)
 	@JsonView(Views.Admin.class)
 	private Long schoolUniqeNumber;
-	@OneToOne(cascade = CascadeType.ALL)
-	@JoinTable(name = "director_school", 
+	@OneToOne(cascade = CascadeType.MERGE)
+	@JoinTable(uniqueConstraints = @UniqueConstraint(columnNames = {"director_id", "school_id"}), name = "director_school", 
     joinColumns = { @JoinColumn(name = "director_id", referencedColumnName = "id_user") },
     inverseJoinColumns = { @JoinColumn(name = "school_id", referencedColumnName = "idSchool") })
 	private SchoolEntity school;

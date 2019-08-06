@@ -11,39 +11,52 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.securities.Views;
 
 @Entity
-@JsonPropertyOrder({"email", "schoolUniqeNumber"})
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"email", "schoolUniqeNumber"}))
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"schoolUniqeNumber"}))
 public class AdminEntity extends UserEntity {
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	@NotNull(message = "Email je obavezan!")
 	@Pattern(regexp = "^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}$", message = "Email nije ispravan!")
-	@JsonView(Views.User.class)
+	@JsonView(Views.Admin.class)
 	private String email;
+	@NotNull(message = "Broj skole je obavezan!")
+	@Min(value = 999999999L, message = "Broj skole mora imati minimum 10 cifara!")
 	@Column(nullable = false, unique = true, length = 10)
 	@JsonView(Views.Admin.class)
-	private Integer schoolUniqeNumber;
-	@OneToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
-	@JsonView(Views.User.class)
-	@JsonManagedReference
-	@JoinColumn(name = "idSchool", nullable = true)
+	private Long schoolUniqeNumber;
+	@OneToOne(cascade = CascadeType.MERGE)
+	@JoinTable(uniqueConstraints = @UniqueConstraint(columnNames = {"school_id", "admin_id"}), name = "admin_school", 
+	joinColumns = { @JoinColumn(name = "admin_id", referencedColumnName = "id_user", nullable = false) },
+    inverseJoinColumns = { @JoinColumn(name = "school_id", referencedColumnName = "idSchool", nullable = false) })
 	private SchoolEntity school;
 	
+	public AdminEntity(String firstName, String lastName, String jmbg, IGender gender, AccountEntity account, AddressEntity address, String email, Long schoolUniqeNumber, SchoolEntity school) {
+		super(firstName, lastName, jmbg, gender, account, address);
+		this.email = email;
+		this.schoolUniqeNumber = schoolUniqeNumber;
+		this.school = school;
+	}
+
 	public AdminEntity() {
 		super();
 	}
@@ -52,7 +65,7 @@ public class AdminEntity extends UserEntity {
 		return school;
 	}
 
-	public void setSchools(SchoolEntity school) {
+	public void setSchool(SchoolEntity school) {
 		this.school = school;
 	}
 
@@ -64,11 +77,11 @@ public class AdminEntity extends UserEntity {
 		this.email = email;
 	}
 
-	public Integer getSchoolUniqeNumber() {
+	public Long getSchoolUniqeNumber() {
 		return schoolUniqeNumber;
 	}
 
-	public void setSchoolUniqeNumber(Integer schoolUniqeNumber) {
+	public void setSchoolUniqeNumber(Long schoolUniqeNumber) {
 		this.schoolUniqeNumber = schoolUniqeNumber;
 	}
 
