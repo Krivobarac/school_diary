@@ -31,6 +31,7 @@ import com.iktpreobuka.schooldiary.entities.AddressEntity;
 import com.iktpreobuka.schooldiary.entities.AdminEntity;
 import com.iktpreobuka.schooldiary.entities.BoroughEntity;
 import com.iktpreobuka.schooldiary.entities.CityEntity;
+import com.iktpreobuka.schooldiary.entities.ClassDepartmentEntity;
 import com.iktpreobuka.schooldiary.entities.HouseNumberEntity;
 import com.iktpreobuka.schooldiary.entities.ParentEntity;
 import com.iktpreobuka.schooldiary.entities.RoleEntity;
@@ -49,9 +50,11 @@ import com.iktpreobuka.schooldiary.entities.dto.StudentDTO;
 import com.iktpreobuka.schooldiary.entities.dto.StudentParentDTO;
 import com.iktpreobuka.schooldiary.entities.dto.TeacherDTO;
 import com.iktpreobuka.schooldiary.enums.IClass;
+import com.iktpreobuka.schooldiary.enums.IDepartment;
 import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.enums.IRole;
 import com.iktpreobuka.schooldiary.repositories.AdminRepository;
+import com.iktpreobuka.schooldiary.repositories.ClassDepartmentRepository;
 import com.iktpreobuka.schooldiary.repositories.ParentRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolYearRepository;
@@ -85,11 +88,9 @@ public class StudentController {
 	@Autowired
 	private SchoolRepository schoolRepository;
 	@Autowired
-	private SubjectRepository subjectRepository;
-	@Autowired
 	private SchoolYearRepository schoolYearRepository;
 	@Autowired
-	private AdminRepository adminRepository;
+	private ClassDepartmentRepository classDepartmentRepository;
 	@Autowired
 	private ErrorMessage errMsg;
 	
@@ -317,6 +318,51 @@ public class StudentController {
 			return new ResponseEntity<StudentEntity>(student, HttpStatus.CREATED);
 		} catch (DataIntegrityViolationException e) {
 			return new ResponseEntity<RestError>(new RestError(550, "Exception occurred: Korisnik sa ovom rolom postoji"), HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@Secured({"ROLE_ADMIN", "ROLE_TEACHER"})
+	@RequestMapping(method = RequestMethod.GET, value = "/toDepartmentClas/{id}")
+	public ResponseEntity<?> addStudentToDepartmentClas(@PathVariable Integer id, Principal principal) {
+		return new ResponseEntity<Principal>(principal, HttpStatus.OK);
+	}
+	
+	@Secured({"ROLE_ADMIN"})
+	@RequestMapping(method = RequestMethod.POST, value = "/toDepartmentClass/{id}")
+	public ResponseEntity<?> addStudentToDepartmentClass(@PathVariable Integer id, Principal principal) {
+		try {
+			StudentEntity student = studentRepository.findById(id).get();
+			SchoolEntity school = schoolRepository.findByTeachersUserName(principal.getName());
+			SchoolYearEntity schoolYear = schoolYearRepository.findBySchoolYear(LocalDateTime.now().getYear() + "/" + (LocalDateTime.now().getYear()+1));
+			List<ClassDepartmentEntity> classDepartment = classDepartmentRepository.findBySchoolAndSchoolClassAndSchoolYear(school, student.getGrade(), schoolYear);
+			ClassDepartmentEntity department = null;
+			if (classDepartment.size() != 0) {
+				Boolean isSet= false;
+				for (ClassDepartmentEntity tempDepartment : classDepartment) {
+					if(tempDepartment.getStudents().size() < 25) {
+						department = tempDepartment;
+						department.setStudents(student);
+						isSet = true;
+					}
+				}
+				if (isSet == false) {
+					for (ClassDepartmentEntity tempDepartment : classDepartment) {
+						if(tempDepartment.getStudents().size() < 35) {
+							department = tempDepartment;
+							department.setStudents(student);
+						}
+					}
+				}
+			} else {
+				department = new ClassDepartmentEntity(student.getGrade(), IDepartment.valueOf("a"), school, schoolYear, student);
+			}
+			
+			department = classDepartmentRepository.save(department);
+			return new ResponseEntity<ClassDepartmentEntity>(department, HttpStatus.CREATED);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
 			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

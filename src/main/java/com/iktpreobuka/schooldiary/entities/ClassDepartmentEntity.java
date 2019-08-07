@@ -47,13 +47,13 @@ public class ClassDepartmentEntity {
 	@JsonView(Views.User.class)
 	private IDepartment department;
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
-	@JoinColumn(nullable = false)
+	@JoinColumn(name = "id_school", nullable = false)
 	@NotNull(message = "Skola je obavezna!")
-	@JsonManagedReference
+	@JsonBackReference
 	@JsonView(Views.User.class)
 	private SchoolEntity school;
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
-	@JoinColumn(nullable = false)
+	@JoinColumn(name = "id_school_year", nullable = false)
 	@NotNull(message = "Skolska godina je obavezna!")
 	@JsonManagedReference
 	@JsonView(Views.User.class)
@@ -69,13 +69,13 @@ public class ClassDepartmentEntity {
 	
 	public ClassDepartmentEntity() {}
 
-	public ClassDepartmentEntity(IClass schoolClass, IDepartment department, SchoolEntity school, SchoolYearEntity schoolYear, List<StudentEntity> students) {
+	public ClassDepartmentEntity(IClass schoolClass, IDepartment department, SchoolEntity school, SchoolYearEntity schoolYear, StudentEntity student) {
 		super();
 		this.schoolClass = schoolClass;
 		this.department = department;
 		this.school = school;
 		this.schoolYear = schoolYear;
-		this.students = students;
+		this.students.add(student);
 	}
 
 	public Integer getIdClassDepartment() {
@@ -86,8 +86,8 @@ public class ClassDepartmentEntity {
 		this.idClassDepartment = idClassDepartment;
 	}
 
-	public IClass getSchoolClass() {
-		return schoolClass;
+	public String getSchoolClass() {
+		return schoolClass + " razred";
 	}
 
 	public void setSchoolClass(IClass schoolClass) {
@@ -124,6 +124,10 @@ public class ClassDepartmentEntity {
 
 	public void setStudents(List<StudentEntity> students) {
 		this.students = students;
+	}
+	
+	public void setStudents(StudentEntity student) {
+		this.students.add(student);
 	}
 
 	public Integer getVersion() {

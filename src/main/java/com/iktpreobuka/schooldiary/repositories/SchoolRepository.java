@@ -18,4 +18,7 @@ public interface SchoolRepository extends CrudRepository<SchoolEntity, Integer> 
 	@Query(value = "select se from SchoolEntity se inner join se.directors d where d.account = null")
 	List<SchoolEntity> findSchoolsNoDirector();
 	SchoolEntity findByNumberSchool(Long numberSchool);
+	@Query(value = "select se from SchoolEntity se inner join se.admins te inner join te.account ae where ae.userName = :userName")
+	SchoolEntity findByTeachersUserName(String userName);
+	
 }
