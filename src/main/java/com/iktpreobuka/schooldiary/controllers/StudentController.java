@@ -2,6 +2,7 @@ package com.iktpreobuka.schooldiary.controllers;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
@@ -9,6 +10,7 @@ import java.util.Random;
 import javax.validation.Valid;
 
 import org.hibernate.Session;
+import org.hibernate.loader.plan.build.internal.returns.NonEncapsulatedEntityIdentifierDescription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -67,6 +69,7 @@ import com.iktpreobuka.schooldiary.services.AddressService;
 import com.iktpreobuka.schooldiary.services.EmailService;
 import com.iktpreobuka.schooldiary.services.RoleService;
 import com.iktpreobuka.schooldiary.services.UserService;
+import com.sun.xml.bind.marshaller.NoEscapeHandler;
 
 @RestController
 @RequestMapping("/schoolDiary/users/student")
@@ -334,7 +337,7 @@ public class StudentController {
 	public ResponseEntity<?> addStudentToDepartmentClass(@PathVariable Integer id, Principal principal) {
 		try {
 			StudentEntity student = studentRepository.findById(id).get();
-			SchoolEntity school = schoolRepository.findByTeachersUserName(principal.getName());
+			SchoolEntity school = schoolRepository.findByAdminsUserName(principal.getName());
 			SchoolYearEntity schoolYear = schoolYearRepository.findBySchoolYear(LocalDateTime.now().getYear() + "/" + (LocalDateTime.now().getYear()+1));
 			List<ClassDepartmentEntity> classDepartment = classDepartmentRepository.findBySchoolAndSchoolClassAndSchoolYear(school, student.getGrade(), schoolYear);
 			ClassDepartmentEntity department = null;
@@ -366,6 +369,49 @@ public class StudentController {
 		} catch (Exception e) {
 			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	@Secured({"ROLE_TEACHER"})
+	@RequestMapping(method = RequestMethod.GET, value = "/ByDepartmentClass/school/{id}")
+	public ResponseEntity<?> getStudentsByClassDepartment(@RequestParam(name = "class") String clas, @RequestParam String department, @PathVariable Integer id, Principal principal) {
+		try {
+			SchoolEntity school = schoolRepository.findById(id).get();
+			List<SchoolEntity> schools = schoolRepository.findByTeachersUserName(principal.getName());
+			Boolean isSet = false;
+			for (SchoolEntity s : schools) {
+				if (s.equals(school)) {isSet = true;}
+			}
+			if(!isSet) {return new ResponseEntity<RestError>(new RestError(404, "Niste zaposleni u datoj skoli!"), HttpStatus.NOT_FOUND);}
+			SchoolYearEntity schoolYear = schoolYearRepository.findBySchoolYear(LocalDateTime.now().getYear() + "/" + (LocalDateTime.now().getYear()+1));
+			ClassDepartmentEntity classDepartment = classDepartmentRepository.findBySchoolAndSchoolClassAndSchoolYearAndDepartment(school, IClass.valueOf(clas), schoolYear, IDepartment.valueOf(department));
+			if(classDepartment == null) {return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);}
+			return new ResponseEntity<List<StudentEntity>>(classDepartment.getStudents(), HttpStatus.OK);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
+		} catch (IllegalArgumentException e) {
+			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: Razred morate upisati sa prvim velikim slovom, odeljenje malim slovom abecede!"), HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception e) {
+			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+		
+		@Secured("ROLE_ADMIN")
+		@RequestMapping(method = RequestMethod.GET, value = "/byDepartmentClassForAdmin")
+		public ResponseEntity<?> getStudentsByClassDepartmentForAdmin(@RequestParam(name = "class") String clas, @RequestParam String department, Principal principal) {
+			try {
+				SchoolEntity school = schoolRepository.findByAdminsUserName(principal.getName());
+				SchoolYearEntity schoolYear = schoolYearRepository.findBySchoolYear(LocalDateTime.now().getYear() + "/" + (LocalDateTime.now().getYear()+1));
+				ClassDepartmentEntity classDepartment = classDepartmentRepository.findBySchoolAndSchoolClassAndSchoolYearAndDepartment(school, IClass.valueOf(clas), schoolYear, IDepartment.valueOf(department));
+				if(classDepartment == null) {return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);}
+				return new ResponseEntity<List<StudentEntity>>(classDepartment.getStudents(), HttpStatus.OK);
+			} catch (NoSuchElementException e) {
+				return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
+			} catch (IllegalArgumentException e) {
+				return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: Razred morate upisati sa prvim velikim slovom, odeljenje malim slovom abecede!"), HttpStatus.INTERNAL_SERVER_ERROR);
+			} catch (Exception e) {
+				return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+	
 	}
 	
 }

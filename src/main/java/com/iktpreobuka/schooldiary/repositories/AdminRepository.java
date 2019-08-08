@@ -15,4 +15,5 @@ public interface AdminRepository extends CrudRepository<AdminEntity, Integer>{
 	AdminEntity findByEmail(String email);
 	@Query(value = "select ae from AdminEntity ae where ae.account != null and ae.school = :school")
 	AdminEntity findBySchool(SchoolEntity school);
+	AdminEntity findByAccountUserName(String userName);
 }

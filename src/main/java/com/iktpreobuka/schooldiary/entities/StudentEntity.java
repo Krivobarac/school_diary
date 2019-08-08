@@ -121,7 +121,7 @@ public class StudentEntity extends UserEntity{
 	public void setEvaluations(List<EvaluationEntity> evaluations) {
 		this.evaluations = evaluations;
 	}
-
+	
 	public IClass getGrade() {
 		return grade;
 	}

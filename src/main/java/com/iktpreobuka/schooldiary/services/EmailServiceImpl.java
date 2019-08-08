@@ -93,5 +93,46 @@ public class EmailServiceImpl implements EmailService {
 		helper.setText(text, true);
 		mailSender.send(mail);
 	}
+	
+	public void sendMark(String email, Integer id) throws Exception {
+		MimeMessage mail = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(mail, true);
+		helper.setTo(email);
+		helper.setSubject("Ocena");
+		String text = "<html><body><h1 style ='color: green'>Izvrseno je ocenjivanje vaseg deteta</h1>\n\r"
+				+ "<p>Ocenu mozete pogledati preko sledeceg linka</p>\n\r"
+				+ "<a href='http://localhost:8080/schoolDiary/evaluation/student/" + id + "'>http://localhost:8080/schoolDiary/evaluation/student/" + id + "</a>\n\r"
+				+ "</body></html>";
+		helper.setText(text, true);
+		mailSender.send(mail);
+	}
+	
+	public void sendUpdatedMark(String email, Integer id) throws Exception {
+		MimeMessage mail = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(mail, true);
+		helper.setTo(email);
+		helper.setSubject("Ocena");
+		String text = "<html><body><h1 style ='color: green'>Izvrsena je izmena ocene</h1>\n\r"
+				+ "<p>Ocenu mozete pogledati preko sledeceg linka</p>\n\r"
+				+ "<a href='http://localhost:8080/schoolDiary/evaluation/student/" + id + "'>http://localhost:8080/schoolDiary/evaluation/student/" + id + "</a>\n\r"
+				+ "</body></html>";
+		helper.setText(text, true);
+		mailSender.send(mail);
+	}
+
+	@Override
+	public void sendDeletedMark(String email, Integer id) throws Exception {
+		MimeMessage mail = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(mail, true);
+		helper.setTo(email);
+		helper.setSubject("Ocena");
+		String text = "<html><body><h1 style ='color: green'>Izbrisana je ocena</h1>\n\r"
+				+ "<p>Promene mozete pogledati preko sledeceg linka</p>\n\r"
+				+ "<a href='http://localhost:8080/schoolDiary/evaluation/student/" + id + "'>http://localhost:8080/schoolDiary/evaluation/student/" + id + "</a>\n\r"
+				+ "</body></html>";
+		helper.setText(text, true);
+		mailSender.send(mail);
+		
+	}
 
 }

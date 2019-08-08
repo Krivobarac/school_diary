@@ -76,7 +76,7 @@ public class SchoolEntity {
 	@ManyToMany(mappedBy = "schools")
 	@JsonIgnore
 	private List<TeacherEntity> teachers = new ArrayList<>();
-	@JsonIgnore
+	@JsonBackReference
 	@OneToMany(mappedBy = "school", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
 	private List<StudentEntity> students = new ArrayList<>();
 	@JsonIgnore

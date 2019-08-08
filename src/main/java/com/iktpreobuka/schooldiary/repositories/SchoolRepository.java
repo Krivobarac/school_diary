@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.iktpreobuka.schooldiary.entities.DirectorEntity;
 import com.iktpreobuka.schooldiary.entities.SchoolEntity;
+import com.iktpreobuka.schooldiary.entities.StudentEntity;
 
 @Repository
 public interface SchoolRepository extends CrudRepository<SchoolEntity, Integer> {
@@ -19,6 +20,8 @@ public interface SchoolRepository extends CrudRepository<SchoolEntity, Integer> 
 	List<SchoolEntity> findSchoolsNoDirector();
 	SchoolEntity findByNumberSchool(Long numberSchool);
 	@Query(value = "select se from SchoolEntity se inner join se.admins te inner join te.account ae where ae.userName = :userName")
-	SchoolEntity findByTeachersUserName(String userName);
-	
+	SchoolEntity findByAdminsUserName(String userName);
+	@Query(value = "select se from SchoolEntity se inner join se.teachers te inner join te.account ae where ae.userName = :userName")
+	List<SchoolEntity> findByTeachersUserName(String userName);
+	SchoolEntity findByStudents(StudentEntity student);
 }

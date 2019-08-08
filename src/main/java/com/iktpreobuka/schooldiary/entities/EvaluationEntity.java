@@ -12,6 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
+import javax.validation.constraints.NotNull;
 
 import com.iktpreobuka.schooldiary.enums.IMark;
 import com.iktpreobuka.schooldiary.enums.ISemester;
@@ -27,26 +28,45 @@ public class EvaluationEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
 	private Integer idEvalueted;
-	@JoinColumn(nullable = false)
+	@NotNull(message = "Student je obavezan!")
+	@JoinColumn(name = "id_student", nullable = false)
 	@JsonManagedReference
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	private StudentEntity student;
+	@NotNull(message = "Nastavnik je obavezan!")
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
-	@JoinColumn(nullable = false)
+	@JoinColumn(name = "id_teacher", nullable = false)
 	private TeacherEntity teacher;
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
-	@JoinColumn(nullable = false)
+	@JoinColumn(name = "id_subject", nullable = false)
+	@NotNull(message = "Predmet je obavezan!")
 	private SubjectEntity subject;
 	@Column(length = 11, nullable = false)
+	@NotNull(message = "Polugodiste je obavezno!")
 	private ISemester semester;
 	@Column(length = 11, nullable = false)
+	@NotNull(message = "Razred je obavezan!")
 	private IClass schoolClass;
 	@Column(length = 11, nullable = false)
+	@NotNull(message = "Ocena je obavezna!")
 	private IMark mark;
 	@Version
 	private Integer version = null;
 	
 	public EvaluationEntity() {}
+	
+	public EvaluationEntity(StudentEntity student, TeacherEntity teacher, SubjectEntity subject, ISemester semester,
+			IClass schoolClass, IMark mark) {
+		super();
+		this.student = student;
+		this.teacher = teacher;
+		this.subject = subject;
+		this.semester = semester;
+		this.schoolClass = schoolClass;
+		this.mark = mark;
+	}
+
+
 
 	public Integer getIdEvalueted() {
 		return idEvalueted;

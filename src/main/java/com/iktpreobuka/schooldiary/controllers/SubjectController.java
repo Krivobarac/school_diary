@@ -69,7 +69,8 @@ public class SubjectController {
 				subjectsDtos.add(subjectDto);
 				for (ClassSubjectDTO classSubjectDto : subjectDto.getClassList()) {
 					ClassSubjectDTO.orderNumber++;
-					validator.validate(classSubjectDto, result);ClassSubjectDTO classList = new ClassSubjectDTO(classSubjectDto.getSchoolClass(), classSubjectDto.getFundWeaklyHours());
+					validator.validate(classSubjectDto, result);
+					//ClassSubjectDTO classList = new ClassSubjectDTO(classSubjectDto.getSchoolClass(), classSubjectDto.getFundWeaklyHours());
 				}
 				ClassSubjectDTO.orderNumber = 0;
 		    }

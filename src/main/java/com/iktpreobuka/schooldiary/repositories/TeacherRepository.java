@@ -16,5 +16,5 @@ public interface TeacherRepository extends CrudRepository<TeacherEntity, Integer
 	@Query(value = "select te from TeacherEntity te inner join te.schools s where s = :school")
 	List<TeacherEntity> findAllTeachersBySchool(SchoolEntity school);
 	List<TeacherEntity> findAllTeachersBySubject(SubjectEntity subject);
-	
+	TeacherEntity findByAccountUserName(String userName);
 }
