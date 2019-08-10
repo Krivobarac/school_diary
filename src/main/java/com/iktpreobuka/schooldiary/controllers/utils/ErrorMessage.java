@@ -6,8 +6,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 
-import com.iktpreobuka.schooldiary.entities.dto.SubjectDTO;
-
 @Component
 public class ErrorMessage {
 
