@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.iktpreobuka.schooldiary.services.RoleServiceImpl;
 
-import ch.qos.logback.core.Context;
-
 @SpringBootApplication
 public class SchoolDiaryApplication {
 	

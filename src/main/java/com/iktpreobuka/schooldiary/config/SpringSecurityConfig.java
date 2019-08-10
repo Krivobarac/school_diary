@@ -13,12 +13,9 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.iktpreobuka.schooldiary.entities.SuperAdminEntity;
 import com.iktpreobuka.schooldiary.entities.UserEntity;
-import com.iktpreobuka.schooldiary.repositories.SuperAdminRepository;
 import com.iktpreobuka.schooldiary.repositories.UserRepository;
 
 @EnableGlobalMethodSecurity(securedEnabled = true)

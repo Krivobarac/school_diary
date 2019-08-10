@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -16,9 +17,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.github.rozidan.springboot.logger.Loggable;
 import com.iktpreobuka.schooldiary.controllers.utils.RestError;
 import com.iktpreobuka.schooldiary.entities.ClassDepartmentEntity;
-import com.iktpreobuka.schooldiary.entities.DirectorEntity;
 import com.iktpreobuka.schooldiary.entities.SchoolEntity;
 import com.iktpreobuka.schooldiary.entities.SchoolYearEntity;
 import com.iktpreobuka.schooldiary.entities.StudentEntity;
@@ -27,8 +28,8 @@ import com.iktpreobuka.schooldiary.repositories.ClassDepartmentRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolYearRepository;
 import com.iktpreobuka.schooldiary.repositories.StudentRepository;
-import com.sun.source.tree.NewClassTree;
 
+@Loggable(entered = true, warnOver = 2, warnUnit = TimeUnit.SECONDS)
 @RestController
 @RequestMapping("/schoolDiary/classDepartment")
 public class ClassDepartmentController {

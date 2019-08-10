@@ -1,14 +1,17 @@
 package com.iktpreobuka.schooldiary.services;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.github.rozidan.springboot.logger.Loggable;
 import com.iktpreobuka.schooldiary.entities.StreetEntity;
 import com.iktpreobuka.schooldiary.repositories.StreetRepository;
 
+@Loggable(entered = true, warnOver = 2, warnUnit = TimeUnit.SECONDS)
 @Service
 @JsonSerialize
 public class StreetServiceImpl implements StreetService {

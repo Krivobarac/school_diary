@@ -72,7 +72,7 @@ public class UserEntity{
 	@JsonFormat(pattern = "hh:MM:ss dd.MM.yyyy", shape = JsonFormat.Shape.STRING)
 	protected LocalDateTime deletedAt = null;
 	@JsonView(Views.SuperAdmin.class)
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
+	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "id_account", unique = true)
 	@JsonManagedReference
 	protected AccountEntity account;

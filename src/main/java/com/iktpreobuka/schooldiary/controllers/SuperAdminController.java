@@ -1,17 +1,24 @@
 package com.iktpreobuka.schooldiary.controllers;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Valid;
 
+import org.aspectj.util.FileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.github.rozidan.springboot.logger.Loggable;
 import com.iktpreobuka.schooldiary.controllers.utils.ErrorMessage;
 import com.iktpreobuka.schooldiary.controllers.utils.RestError;
 import com.iktpreobuka.schooldiary.entities.AccountEntity;
@@ -33,6 +41,7 @@ import com.iktpreobuka.schooldiary.entities.SuperAdminEntity;
 import com.iktpreobuka.schooldiary.entities.UserEntity;
 import com.iktpreobuka.schooldiary.entities.dto.AccountDTO;
 import com.iktpreobuka.schooldiary.entities.dto.EmailDTO;
+import com.iktpreobuka.schooldiary.entities.dto.LogDateTimeDTO;
 import com.iktpreobuka.schooldiary.entities.dto.SuperAdminDTO;
 import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.enums.IRole;
@@ -44,6 +53,7 @@ import com.iktpreobuka.schooldiary.services.EmailService;
 import com.iktpreobuka.schooldiary.services.RoleService;
 import com.iktpreobuka.schooldiary.services.UserService;
 
+@Loggable(entered = true, warnOver = 2, warnUnit = TimeUnit.SECONDS)
 @JsonView(Views.SuperAdmin.class)
 @Secured(value = {"ROLE_SUPER_ADMIN"})
 @RestController
@@ -64,6 +74,8 @@ public class SuperAdminController {
 	private RoleService roleServ;
 	@Autowired
 	private ErrorMessage errMsg;
+	@Value("${logging.file.name}")
+	private String logFilePath;
 	
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> addNewSuperAdmin(@Valid @RequestBody(required = false) SuperAdminDTO superAdminDto, BindingResult result){
@@ -74,7 +86,7 @@ public class SuperAdminController {
 		String userName =  superAdminDto.getEmail().substring(0, superAdminDto.getEmail().indexOf('@')) + "SA";		
 		try {
 			AddressEntity address = addressServ.save(new AddressEntity(new StreetEntity(superAdminDto.getNameStreet()), new HouseNumberEntity(superAdminDto.getHouseNumber()), new CityEntity(superAdminDto.getNameCity(), new BoroughEntity(superAdminDto.getNameBorough(), superAdminDto.getNumberBorough()))));
-			AccountEntity account = accountServ.save(new AccountEntity(userName, new BCryptPasswordEncoder().encode(password), role));
+			AccountEntity account = accountServ.save(new AccountEntity(userName, password, role));
 			SuperAdminEntity superAdmin = superAdminRepository.save(new SuperAdminEntity(superAdminDto.getFirstName(), superAdminDto.getLastName(), superAdminDto.getJmbg(), IGender.valueOf(superAdminDto.getGender()), account, address, superAdminDto.getEmail()));
 			if(superAdmin!= null) { 
 				emailServ.sendCredential(superAdminDto.getEmail(), userName, password, superAdmin.getIdUser(), "sa");
@@ -157,7 +169,7 @@ public class SuperAdminController {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(emailDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		String password = emailDto.getEmail().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + emailDto.getEmail().substring(1, 2) + emailDto.getEmail().substring(0,1);
-		String userName =  emailDto.getEmail().substring(0, emailDto.getEmail().indexOf('@')) + "SA";
+		String userName =  emailDto.getEmail().substring(0, emailDto.getEmail().indexOf('@')) + "SAu";
 		try {
 			SuperAdminEntity superAdmin = superAdminRepository.findByEmail(emailDto.getEmail());
 			UserEntity user = userServ.getById(superAdmin);
@@ -182,12 +194,59 @@ public class SuperAdminController {
 			superAdmin.getAccount().setPassword(accounDto.getPassword());
 			superAdmin.getAccount().setUserName(accounDto.getUserName());
 			emailServ.changeCredential(superAdmin.getEmail(), accounDto.getUserName(), accounDto.getPassword(), superAdmin.getIdUser(), "sa");
-			return new ResponseEntity<SuperAdminEntity>(superAdminRepository.save(superAdmin), HttpStatus.OK);
+			superAdmin = superAdminRepository.save(superAdmin);
+			return new ResponseEntity<SuperAdminEntity>(superAdmin, HttpStatus.OK);
 		} catch (NoSuchElementException e) {
 			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
 			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/getLog")
+	public ResponseEntity<?> getLogByDateAndTime(@Valid @RequestBody LogDateTimeDTO logDateTimeDto, BindingResult result) {
+		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
+		if(logDateTimeDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
+		try {
+			String startDateTime = logDateTimeDto.getStartDate() + " " + logDateTimeDto.getStartTime();
+			String endDateTime = logDateTimeDto.getEndDate() + " " + logDateTimeDto.getEndTime();
+			String data = "";
+			File myLogFile = new File(logFilePath);
+			Scanner scanner = new Scanner(myLogFile);
+			while (scanner.hasNextLine()) {
+				if(scanner.nextLine().length() > 19) {
+					continue;
+				}
+				if(scanner.nextLine().substring(0, 19).compareTo(startDateTime) >= 0) {
+					data += scanner.nextLine() + "\n\r";
+				}
+				if(scanner.nextLine().substring(0, 19).equals(endDateTime)) {
+					break;
+				}
+		     }
+			scanner.close();
+			return new ResponseEntity<String>(data, HttpStatus.OK);
+		} catch (FileNotFoundException e) {
+			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception e) {
+			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/downloadLogFile")
+	public ResponseEntity<?> downloadLogFile() {
+		try {
+			Path path = Paths.get(logFilePath);
+			File myFile = new File(logFilePath);
+			File copyDestination = new File("C:\\Users\\" + System.getProperty("user.name") + "\\Downloads\\" + path.getFileName());
+			FileUtil.copyFile(myFile, copyDestination);
+			return new ResponseEntity<String>("Log file je uspesno skinut u vas Downloads folder!", HttpStatus.OK);
+ 		} catch (FileNotFoundException e) {
+ 			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception e) {
+ 			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
 	}
 	
 }

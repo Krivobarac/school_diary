@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import com.iktpreobuka.schooldiary.entities.AdminEntity;
 import com.iktpreobuka.schooldiary.entities.EvaluationEntity;
-import com.iktpreobuka.schooldiary.entities.ParentEntity;
 import com.iktpreobuka.schooldiary.entities.StudentEntity;
 import com.iktpreobuka.schooldiary.entities.TeacherEntity;
 

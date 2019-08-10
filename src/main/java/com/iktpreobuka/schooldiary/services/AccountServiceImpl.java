@@ -1,14 +1,17 @@
 package com.iktpreobuka.schooldiary.services;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.github.rozidan.springboot.logger.Loggable;
 import com.iktpreobuka.schooldiary.entities.AccountEntity;
-import com.iktpreobuka.schooldiary.entities.StreetEntity;
+import com.iktpreobuka.schooldiary.entities.UserEntity;
 import com.iktpreobuka.schooldiary.repositories.AccountRepository;
 
+@Loggable(entered = true, warnOver = 2, warnUnit = TimeUnit.SECONDS)
 @Service
 public class AccountServiceImpl implements AccountService{
 	@Autowired
@@ -46,6 +49,10 @@ public class AccountServiceImpl implements AccountService{
 			accountRepository.save(account);
 		}
 		return account;
+	}
+	
+	public AccountEntity getAccountByUser(UserEntity user) {
+		return accountRepository.findByUsers(user);
 	}
 
 }

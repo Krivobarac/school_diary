@@ -1,5 +1,7 @@
 package com.iktpreobuka.schooldiary.services;
 
+import java.util.concurrent.TimeUnit;
+
 import javax.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +9,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import com.github.rozidan.springboot.logger.Loggable;
+
+@Loggable(entered = true, warnOver = 2, warnUnit = TimeUnit.SECONDS)
 @Service
 public class EmailServiceImpl implements EmailService {
 	

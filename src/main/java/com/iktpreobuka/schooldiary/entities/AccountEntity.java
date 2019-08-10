@@ -23,6 +23,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -62,7 +63,7 @@ public class AccountEntity {
 	@Version
 	private Integer version = null;
 	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
-	@JsonIgnore
+	@JsonBackReference
 	private List<UserEntity> users = new ArrayList<>();
 	
 	public AccountEntity() {}

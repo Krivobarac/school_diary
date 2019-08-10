@@ -3,6 +3,7 @@ package com.iktpreobuka.schooldiary.controllers;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Valid;
 
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.annotation.JsonView;
+import com.github.rozidan.springboot.logger.Loggable;
 import com.iktpreobuka.schooldiary.controllers.utils.ErrorMessage;
 import com.iktpreobuka.schooldiary.controllers.utils.RestError;
 import com.iktpreobuka.schooldiary.entities.AccountEntity;
@@ -28,30 +29,23 @@ import com.iktpreobuka.schooldiary.entities.AddressEntity;
 import com.iktpreobuka.schooldiary.entities.AdminEntity;
 import com.iktpreobuka.schooldiary.entities.BoroughEntity;
 import com.iktpreobuka.schooldiary.entities.CityEntity;
-import com.iktpreobuka.schooldiary.entities.AdminEntity;
 import com.iktpreobuka.schooldiary.entities.HouseNumberEntity;
 import com.iktpreobuka.schooldiary.entities.RoleEntity;
 import com.iktpreobuka.schooldiary.entities.SchoolEntity;
 import com.iktpreobuka.schooldiary.entities.StreetEntity;
-import com.iktpreobuka.schooldiary.entities.SuperAdminEntity;
-import com.iktpreobuka.schooldiary.entities.UserEntity;
 import com.iktpreobuka.schooldiary.entities.dto.AccountDTO;
 import com.iktpreobuka.schooldiary.entities.dto.AdminDTO;
-import com.iktpreobuka.schooldiary.entities.dto.DirectorDTO;
 import com.iktpreobuka.schooldiary.entities.dto.EmailDTO;
-import com.iktpreobuka.schooldiary.entities.dto.SuperAdminDTO;
 import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.enums.IRole;
 import com.iktpreobuka.schooldiary.repositories.AdminRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolRepository;
-import com.iktpreobuka.schooldiary.repositories.SuperAdminRepository;
-import com.iktpreobuka.schooldiary.securities.Views;
 import com.iktpreobuka.schooldiary.services.AccountService;
 import com.iktpreobuka.schooldiary.services.AddressService;
 import com.iktpreobuka.schooldiary.services.EmailService;
 import com.iktpreobuka.schooldiary.services.RoleService;
-import com.iktpreobuka.schooldiary.services.UserService;
 
+@Loggable(entered = true, warnOver = 2, warnUnit = TimeUnit.SECONDS)
 @RestController
 @RequestMapping("/schoolDiary/users/admin")
 public class AdminController {
@@ -66,11 +60,10 @@ public class AdminController {
 	@Autowired
 	private AccountService accountServ;
 	@Autowired
-	private UserService userServ;
-	@Autowired
 	private RoleService roleServ;
 	@Autowired
 	private ErrorMessage errMsg;
+	
 	
 	@Secured(value = {"ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.POST)
@@ -86,7 +79,9 @@ public class AdminController {
 		try {
 			Long schoolUniqeNumber = Long.parseLong((((int)adminRepository.count())+1) + "" + (new Random().nextInt(900)+100) + "" + LocalDateTime.now().getDayOfMonth() + "" + LocalDateTime.now().getMonthValue() + "" + LocalDateTime.now().getYear());	
 			SchoolEntity school = schoolRepository.findByNumberSchool(schoolNumber);
-			if (school == null) {return new ResponseEntity<RestError>(new RestError(550, "Exception occurred: Skola sa datim brojem ne postoji!"), HttpStatus.BAD_REQUEST);}
+			if (school == null) {
+				return new ResponseEntity<RestError>(new RestError(550, "Skola sa datim brojem ne postoji!"), HttpStatus.BAD_REQUEST);
+			}
 			AdminEntity oldAdmin = adminRepository.findBySchool(school);
 			if (oldAdmin != null) {
 				AccountEntity oldAccount = oldAdmin.getAccount();
@@ -106,7 +101,7 @@ public class AdminController {
 			}
 			return new ResponseEntity<AdminEntity>(admin, HttpStatus.CREATED);
 		} catch (DataIntegrityViolationException e) {
-			return new ResponseEntity<RestError>(new RestError(550, "Exception occurred: Korisnik sa ovom rolom postoji"), HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<RestError>(new RestError(550, "Korisnik sa ovom rolom postoji"), HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
 			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -162,7 +157,7 @@ public class AdminController {
 	
 	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/{id}")
-	public ResponseEntity<?> updateDirectorById(@Valid @RequestBody(required = false) AdminDTO adminDto, BindingResult result, @PathVariable Integer id) {
+	public ResponseEntity<?> updateAdminById(@Valid @RequestBody(required = false) AdminDTO adminDto, BindingResult result, @PathVariable Integer id) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(adminDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		try {
@@ -193,13 +188,13 @@ public class AdminController {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(emailDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		String password = emailDto.getEmail().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + emailDto.getEmail().substring(1, 2) + emailDto.getEmail().substring(0,1);
-		String userName =  emailDto.getEmail().substring(0, emailDto.getEmail().indexOf('@')) + "SA";
+		String userName =  emailDto.getEmail().substring(0, emailDto.getEmail().indexOf('@')) + "Au";
 		try {
 			AdminEntity admin = adminRepository.findByEmail(emailDto.getEmail());
-			UserEntity user = userServ.getById(admin);
-			user.getAccount().setUserName(userName);
-			user.getAccount().setPassword(password);	
-			accountServ.updateById(user.getAccount().getIdAccount(), user.getAccount());
+			admin.getAccount().setUserName(userName);
+			admin.getAccount().setPassword(password);	
+			accountServ.updateById(admin.getAccount().getIdAccount(), admin.getAccount());
+			admin = adminRepository.save(admin);
 			emailServ.sendGenerateCredential(admin.getEmail(), userName, password, admin.getIdUser(), "admin");
 			return new ResponseEntity<AdminEntity>(admin, HttpStatus.OK);
 		} catch (NoSuchElementException e) {

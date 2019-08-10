@@ -1,13 +1,10 @@
 package com.iktpreobuka.schooldiary.repositories;
 
-import java.util.List;
-
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import com.iktpreobuka.schooldiary.entities.AdminEntity;
-import com.iktpreobuka.schooldiary.entities.DirectorEntity;
 import com.iktpreobuka.schooldiary.entities.SchoolEntity;
 
 @Repository

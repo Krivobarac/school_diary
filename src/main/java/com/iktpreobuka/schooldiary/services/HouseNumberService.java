@@ -2,7 +2,6 @@ package com.iktpreobuka.schooldiary.services;
 
 import java.util.List;
 
-import com.iktpreobuka.schooldiary.entities.CityEntity;
 import com.iktpreobuka.schooldiary.entities.HouseNumberEntity;
 
 public interface HouseNumberService {

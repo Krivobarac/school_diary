@@ -1,24 +1,8 @@
 package com.iktpreobuka.schooldiary.entities.dto;
 
-import javax.persistence.Column;
-import javax.persistence.PostUpdate;
-import javax.persistence.UniqueConstraint;
-import javax.validation.Constraint;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-
-import org.hibernate.validator.constraints.UniqueElements;
-import org.springframework.format.annotation.NumberFormat;
-
-import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
-import com.iktpreobuka.schooldiary.enums.IGender;
-import com.iktpreobuka.schooldiary.securities.Views;
 
 public class UserDTO extends AddressDTO {
 	@NotNull(message = "Ime je obavezno!")

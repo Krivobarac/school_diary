@@ -1,13 +1,16 @@
 package com.iktpreobuka.schooldiary.services;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.github.rozidan.springboot.logger.Loggable;
 import com.iktpreobuka.schooldiary.entities.HouseNumberEntity;
 import com.iktpreobuka.schooldiary.repositories.HouseNumberRepository;
 
+@Loggable(entered = true, warnOver = 2, warnUnit = TimeUnit.SECONDS)
 @Service
 public class HouseNumberServiceImpl implements HouseNumberService{
 	@Autowired

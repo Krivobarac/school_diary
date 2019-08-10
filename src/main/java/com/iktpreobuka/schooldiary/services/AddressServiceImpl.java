@@ -1,12 +1,13 @@
 package com.iktpreobuka.schooldiary.services;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.iktpreobuka.schooldiary.entities.StreetEntity;
+import com.github.rozidan.springboot.logger.Loggable;
 import com.iktpreobuka.schooldiary.entities.AddressEntity;
 import com.iktpreobuka.schooldiary.entities.BoroughEntity;
 import com.iktpreobuka.schooldiary.entities.CityEntity;
@@ -14,6 +15,7 @@ import com.iktpreobuka.schooldiary.entities.HouseNumberEntity;
 import com.iktpreobuka.schooldiary.repositories.AddressRepository;
 import com.iktpreobuka.schooldiary.repositories.UserRepository;
 
+@Loggable(entered = true, warnOver = 2, warnUnit = TimeUnit.SECONDS)
 @Service
 public class AddressServiceImpl implements AddressService{
 	
@@ -104,22 +106,22 @@ public class AddressServiceImpl implements AddressService{
 		if (boroughs > 1) {
 			borough = boroughServ.save(new BoroughEntity(ae.getCity().getBorough().getNameBorough(), ae.getCity().getBorough().getNumberBorough()));
 		} else {
-			borough = boroughServ.update(borough.getIdBorough(), borough);
+			borough = boroughServ.update(borough.getIdBorough(), ae.getCity().getBorough());
 		}
 		if (cities > 1) {
 			city = cityServ.save(new CityEntity(ae.getCity().getNameCity(), borough));
 		} else {
-			city = cityServ.update(city.getIdCity(), city);
+			city = cityServ.update(city.getIdCity(), ae.getCity());
 		}
 		if (streets > 1) {
 			street = streetServ.save(new StreetEntity(ae.getStreet().getNameStreet()));
 		} else {
-			street = streetServ.update(street.getIdStreet(), street);
+			street = streetServ.update(street.getIdStreet(), ae.getStreet());
 		}
 		if (houseNumbers > 1) {
 			houseNumber = houseNumberServ.save(new HouseNumberEntity(ae.getHouseNumber().getHouseNumber()));
 		} else {
-			houseNumber = houseNumberServ.update(houseNumber.getIdNumber(), houseNumber);
+			houseNumber = houseNumberServ.update(houseNumber.getIdNumber(), ae.getHouseNumber());
 		}
 		address.setCity(city);
 		address.setHouseNumber(houseNumber);

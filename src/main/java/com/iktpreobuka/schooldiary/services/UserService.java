@@ -14,4 +14,6 @@ public interface UserService {
 	public List<UserEntity> getAll();
 
 	public UserEntity update(Integer id, UserEntity ue);
+	
+	public UserEntity findbyAccount(Integer id);
 }

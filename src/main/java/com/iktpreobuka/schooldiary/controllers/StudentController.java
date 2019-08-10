@@ -2,15 +2,13 @@ package com.iktpreobuka.schooldiary.controllers;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Valid;
 
-import org.hibernate.Session;
-import org.hibernate.loader.plan.build.internal.returns.NonEncapsulatedEntityIdentifierDescription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -26,11 +24,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.github.rozidan.springboot.logger.Loggable;
 import com.iktpreobuka.schooldiary.controllers.utils.ErrorMessage;
 import com.iktpreobuka.schooldiary.controllers.utils.RestError;
 import com.iktpreobuka.schooldiary.entities.AccountEntity;
 import com.iktpreobuka.schooldiary.entities.AddressEntity;
-import com.iktpreobuka.schooldiary.entities.AdminEntity;
 import com.iktpreobuka.schooldiary.entities.BoroughEntity;
 import com.iktpreobuka.schooldiary.entities.CityEntity;
 import com.iktpreobuka.schooldiary.entities.ClassDepartmentEntity;
@@ -41,36 +39,29 @@ import com.iktpreobuka.schooldiary.entities.SchoolEntity;
 import com.iktpreobuka.schooldiary.entities.SchoolYearEntity;
 import com.iktpreobuka.schooldiary.entities.StreetEntity;
 import com.iktpreobuka.schooldiary.entities.StudentEntity;
-import com.iktpreobuka.schooldiary.entities.SubjectEntity;
-import com.iktpreobuka.schooldiary.entities.TeacherEntity;
-import com.iktpreobuka.schooldiary.entities.StudentEntity;
 import com.iktpreobuka.schooldiary.entities.UserEntity;
 import com.iktpreobuka.schooldiary.entities.dto.AccountDTO;
 import com.iktpreobuka.schooldiary.entities.dto.EmailDTO;
 import com.iktpreobuka.schooldiary.entities.dto.ParentDTO;
 import com.iktpreobuka.schooldiary.entities.dto.StudentDTO;
 import com.iktpreobuka.schooldiary.entities.dto.StudentParentDTO;
-import com.iktpreobuka.schooldiary.entities.dto.TeacherDTO;
 import com.iktpreobuka.schooldiary.enums.IClass;
 import com.iktpreobuka.schooldiary.enums.IDepartment;
 import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.enums.IRole;
-import com.iktpreobuka.schooldiary.repositories.AdminRepository;
 import com.iktpreobuka.schooldiary.repositories.ClassDepartmentRepository;
 import com.iktpreobuka.schooldiary.repositories.ParentRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolYearRepository;
 import com.iktpreobuka.schooldiary.repositories.StudentRepository;
-import com.iktpreobuka.schooldiary.repositories.SubjectRepository;
-import com.iktpreobuka.schooldiary.repositories.TeacherRepository;
 import com.iktpreobuka.schooldiary.securities.Views;
 import com.iktpreobuka.schooldiary.services.AccountService;
 import com.iktpreobuka.schooldiary.services.AddressService;
 import com.iktpreobuka.schooldiary.services.EmailService;
 import com.iktpreobuka.schooldiary.services.RoleService;
 import com.iktpreobuka.schooldiary.services.UserService;
-import com.sun.xml.bind.marshaller.NoEscapeHandler;
 
+@Loggable(entered = true, warnOver = 2, warnUnit = TimeUnit.SECONDS)
 @RestController
 @RequestMapping("/schoolDiary/users/student")
 public class StudentController {
@@ -106,7 +97,7 @@ public class StudentController {
 		RoleEntity role = roleServ.getRoleByRole(IRole.ROLE_USER);
 		String studentPassword = studentParentDto.getFirstName().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + studentParentDto.getFirstName().substring(1, 2) + studentParentDto.getLastName().substring(1,2);
 		String studentUserName =  studentParentDto.getParentEmail().substring(0, studentParentDto.getParentEmail().indexOf('@')) + "S" + studentParentDto.getJmbg().substring(studentParentDto.getJmbg().length()-3);
-		String parentPassword = studentParentDto.getParentFirstName().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + studentParentDto.getParentFirstName().substring(1, 2) + studentParentDto.getParentLastName().substring(1,2);
+		String parentPassword = "Vasa sifra za dato korisnicko ime!";
 		String parenttUserName =  studentParentDto.getParentEmail().substring(0, studentParentDto.getParentEmail().indexOf('@')) + "P" + studentParentDto.getParentJmbg().substring(studentParentDto.getJmbg().length()-3);
 		long schoolNumber = studentParentDto.getSchoolNumber();
 		AccountEntity studentAccount = new AccountEntity(studentUserName, new BCryptPasswordEncoder().encode(studentPassword), role);
@@ -121,11 +112,11 @@ public class StudentController {
 			AddressEntity addressS = addressServ.save(studentAddress);
 			AddressEntity addressP = addressServ.save(parentAddress);
 			if (parent == null) {
+				parentPassword = studentParentDto.getParentFirstName().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + studentParentDto.getParentFirstName().substring(1, 2) + studentParentDto.getParentLastName().substring(1,2);
 				parentAccount = accountServ.save(parentAccount);
 				parent = new ParentEntity(studentParentDto.getParentFirstName(), studentParentDto.getParentLastName(), studentParentDto.getParentJmbg(), IGender.valueOf(studentParentDto.getParentGender()), parentAccount, addressP, studentParentDto.getParentEmail());
 				parent = parentRepository.save(parent);
-			}
-			parentPassword = "Vasa sifra za dato korisnicko ime!"; 
+			} 
 			AccountEntity accountS = accountServ.save(studentAccount);
 			StudentEntity student = new StudentEntity(studentParentDto.getFirstName(), studentParentDto.getLastName(), studentParentDto.getJmbg(), IGender.valueOf(studentParentDto.getGender()), accountS, addressS, schoolUniqeNumber, school, IClass.values()[studentParentDto.getGrade()], schoolYear, parent);
 			student = studentRepository.save(student);
@@ -229,7 +220,7 @@ public class StudentController {
 				user.getAccount().setUserName(userName);
 				user.getAccount().setPassword(new BCryptPasswordEncoder().encode(password));	
 				accountServ.updateById(user.getAccount().getIdAccount(), user.getAccount());
-				emailServ.sendGenerateCredential(parent.getEmail(), userName, password, parent.getIdUser(), "student");
+				emailServ.sendGenerateCredential(parent.getEmail(), userName, new BCryptPasswordEncoder().encode(password), parent.getIdUser(), "student");
 			}
 			return new ResponseEntity<StudentEntity>(student, HttpStatus.OK);
 		} catch (NoSuchElementException e) {
@@ -246,7 +237,7 @@ public class StudentController {
 		if(accounDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		try {
 			StudentEntity student = studentRepository.findById(id).get();
-			student.getAccount().setPassword(accounDto.getPassword());
+			student.getAccount().setPassword(new BCryptPasswordEncoder().encode(accounDto.getPassword()));
 			student.getAccount().setUserName(accounDto.getUserName());
 			emailServ.changeCredential(student.getParents().get(0).getEmail(), accounDto.getUserName(), accounDto.getPassword(), student.getIdUser(), "student");
 			return new ResponseEntity<StudentEntity>(studentRepository.save(student), HttpStatus.OK);

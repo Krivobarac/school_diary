@@ -1,14 +1,17 @@
 package com.iktpreobuka.schooldiary.services;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.github.rozidan.springboot.logger.Loggable;
 import com.iktpreobuka.schooldiary.entities.BoroughEntity;
 import com.iktpreobuka.schooldiary.entities.CityEntity;
 import com.iktpreobuka.schooldiary.repositories.CityRepository;
 
+@Loggable(entered = true, warnOver = 2, warnUnit = TimeUnit.SECONDS)
 @Service
 public class CityServiceImpl implements CityService {
 	@Autowired

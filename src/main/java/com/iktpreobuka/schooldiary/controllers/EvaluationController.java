@@ -2,49 +2,39 @@ package com.iktpreobuka.schooldiary.controllers;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.convert.JodaTimeConverters.LocalDateTimeToDateConverter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.annotation.JsonView;
-import com.iktpreobuka.schooldiary.controllers.utils.ErrorMessage;
+import com.github.rozidan.springboot.logger.Loggable;
 import com.iktpreobuka.schooldiary.controllers.utils.RestError;
 import com.iktpreobuka.schooldiary.entities.AdminEntity;
 import com.iktpreobuka.schooldiary.entities.EvaluationEntity;
 import com.iktpreobuka.schooldiary.entities.SchoolEntity;
 import com.iktpreobuka.schooldiary.entities.StudentEntity;
 import com.iktpreobuka.schooldiary.entities.TeacherEntity;
-import com.iktpreobuka.schooldiary.entities.UserEntity;
 import com.iktpreobuka.schooldiary.enums.IMark;
-import com.iktpreobuka.schooldiary.enums.IRole;
 import com.iktpreobuka.schooldiary.enums.ISemester;
 import com.iktpreobuka.schooldiary.repositories.AdminRepository;
-import com.iktpreobuka.schooldiary.repositories.DirectorRepository;
 import com.iktpreobuka.schooldiary.repositories.EvaluationRepository;
-import com.iktpreobuka.schooldiary.repositories.ParentRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolRepository;
 import com.iktpreobuka.schooldiary.repositories.StudentRepository;
-import com.iktpreobuka.schooldiary.repositories.SubjectRepository;
 import com.iktpreobuka.schooldiary.repositories.TeacherRepository;
-import com.iktpreobuka.schooldiary.repositories.UserRepository;
-import com.iktpreobuka.schooldiary.securities.Views;
-import com.iktpreobuka.schooldiary.services.AddressService;
 import com.iktpreobuka.schooldiary.services.EmailService;
 
+@Loggable(entered = true, warnOver = 2, warnUnit = TimeUnit.SECONDS)
 @RestController
 @RequestMapping(value = "/schoolDiary/evaluation")
 public class EvaluationController {
@@ -58,13 +48,7 @@ public class EvaluationController {
 	@Autowired
 	private AdminRepository adminRepository;
 	@Autowired
-	private ParentRepository parentRepository;
-	@Autowired
 	private TeacherRepository teacherRepository;
-	@Autowired
-	private SubjectRepository subjectRepository;
-	@Autowired
-	private UserRepository userRepository;
 	@Autowired
 	private EmailService emailServ;
 
@@ -86,9 +70,6 @@ public class EvaluationController {
 			EvaluationEntity evaluation = new EvaluationEntity(student, teacher, teacher.getSubject(), semester, student.getGrade(), marked);
 			evaluation = evaluationRepository.save(evaluation);
 			emailServ.sendMark(student.getParents().get(0).getEmail(), student.getIdUser());
-			if(!student.getParents().get(1).equals(null)) {
-				emailServ.sendMark(student.getParents().get(1).getEmail(), student.getIdUser());
-			}
 			return new ResponseEntity<EvaluationEntity>(evaluation, HttpStatus.CREATED);
 		} catch (NoSuchElementException e) {
 			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);

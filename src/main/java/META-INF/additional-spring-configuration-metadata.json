@@ -38,5 +38,10 @@
     "name": "spring.datasource.jdbc",
     "type": "java.lang.String",
     "description": "A description for 'spring.datasource.jdbc'"
+  },
+  {
+    "name": "log4j.logger.org.thymeleaf",
+    "type": "java.lang.String",
+    "description": "A description for 'log4j.logger.org.thymeleaf'"
   }
 ]}

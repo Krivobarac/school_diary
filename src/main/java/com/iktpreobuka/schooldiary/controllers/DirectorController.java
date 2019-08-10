@@ -2,9 +2,9 @@ package com.iktpreobuka.schooldiary.controllers;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Valid;
 
@@ -13,8 +13,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.util.Assert;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,12 +21,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.annotation.JsonView;
+import com.github.rozidan.springboot.logger.Loggable;
 import com.iktpreobuka.schooldiary.controllers.utils.ErrorMessage;
 import com.iktpreobuka.schooldiary.controllers.utils.RestError;
 import com.iktpreobuka.schooldiary.entities.AccountEntity;
 import com.iktpreobuka.schooldiary.entities.AddressEntity;
-import com.iktpreobuka.schooldiary.entities.AdminEntity;
 import com.iktpreobuka.schooldiary.entities.BoroughEntity;
 import com.iktpreobuka.schooldiary.entities.CityEntity;
 import com.iktpreobuka.schooldiary.entities.DirectorEntity;
@@ -36,7 +33,6 @@ import com.iktpreobuka.schooldiary.entities.HouseNumberEntity;
 import com.iktpreobuka.schooldiary.entities.RoleEntity;
 import com.iktpreobuka.schooldiary.entities.SchoolEntity;
 import com.iktpreobuka.schooldiary.entities.StreetEntity;
-import com.iktpreobuka.schooldiary.entities.UserEntity;
 import com.iktpreobuka.schooldiary.entities.dto.AccountDTO;
 import com.iktpreobuka.schooldiary.entities.dto.DirectorDTO;
 import com.iktpreobuka.schooldiary.entities.dto.EmailDTO;
@@ -44,13 +40,12 @@ import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.enums.IRole;
 import com.iktpreobuka.schooldiary.repositories.DirectorRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolRepository;
-import com.iktpreobuka.schooldiary.securities.Views;
 import com.iktpreobuka.schooldiary.services.AccountService;
 import com.iktpreobuka.schooldiary.services.AddressService;
 import com.iktpreobuka.schooldiary.services.EmailService;
 import com.iktpreobuka.schooldiary.services.RoleService;
-import com.iktpreobuka.schooldiary.services.UserService;
 
+@Loggable(entered = true, warnOver = 2, warnUnit = TimeUnit.SECONDS)
 @RestController
 @RequestMapping("/schoolDiary/users/director")
 public class DirectorController {
@@ -62,8 +57,6 @@ public class DirectorController {
 	private AddressService addressServ;
 	@Autowired
 	private AccountService accountServ;
-	@Autowired
-	private UserService userServ;
 	@Autowired
 	private RoleService roleServ;
 	@Autowired
@@ -80,7 +73,7 @@ public class DirectorController {
 		String password = directorDto.getFirstName().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + directorDto.getFirstName().substring(1, 2) + directorDto.getLastName().substring(1,2);
 		String userName =  directorDto.getEmail().substring(0, directorDto.getEmail().indexOf('@')) + "D";
 		long schoolNumber = directorDto.getSchoolNumber();
-		AccountEntity account = new AccountEntity(userName, new BCryptPasswordEncoder().encode(password), role);
+		AccountEntity account = new AccountEntity(userName, password, role);
 		AddressEntity address = new AddressEntity(new StreetEntity(directorDto.getNameStreet()), new HouseNumberEntity(directorDto.getHouseNumber()), new CityEntity(directorDto.getNameCity(), new BoroughEntity(directorDto.getNameBorough(), directorDto.getNumberBorough())));
 		try {
 			Long schoolUniqeNumber = Long.parseLong((((int)directorRepository.count())+1) + "" + (new Random().nextInt(900)+100) + "" + LocalDateTime.now().getDayOfMonth() + "" + LocalDateTime.now().getMonthValue() + "" + LocalDateTime.now().getYear());	
@@ -186,19 +179,18 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_ADMIN"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/forgottenCredential")
 	public ResponseEntity<?> forgottenCredential(@Valid @RequestBody(required = false) EmailDTO emailDto, BindingResult result) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(emailDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		String password = emailDto.getEmail().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + emailDto.getEmail().substring(1, 2) + emailDto.getEmail().substring(0,1);
-		String userName =  emailDto.getEmail().substring(0, emailDto.getEmail().indexOf('@')) + "SA";
+		String userName =  emailDto.getEmail().substring(0, emailDto.getEmail().indexOf('@')) + "Du";
 		try {
 			DirectorEntity director = directorRepository.findByEmail(emailDto.getEmail());
-			UserEntity user = userServ.getById(director);
-			user.getAccount().setUserName(userName);
-			user.getAccount().setPassword(password);	
-			accountServ.updateById(user.getAccount().getIdAccount(), user.getAccount());
+			director.getAccount().setPassword(password);
+			director.getAccount().setUserName(userName);
+			director = directorRepository.save(director);
 			emailServ.sendGenerateCredential(director.getEmail(), userName, password, director.getIdUser(), "director");
 			return new ResponseEntity<DirectorEntity>(director, HttpStatus.OK);
 		} catch (NoSuchElementException e) {
