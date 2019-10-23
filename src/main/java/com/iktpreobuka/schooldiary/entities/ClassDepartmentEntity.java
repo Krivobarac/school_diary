@@ -36,6 +36,7 @@ public class ClassDepartmentEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
 	@JsonView(Views.SuperAdmin.class)
+	@JsonIgnore
 	private Integer idClassDepartment;
 	@Column(length = 11, nullable = false)
 	@NotNull(message = "Razred je obavezan!")
@@ -63,6 +64,7 @@ public class ClassDepartmentEntity {
     inverseJoinColumns = { @JoinColumn(name = "student_id", referencedColumnName = "id_user") })
 	private List<StudentEntity> students = new ArrayList<>();
 	@Version
+	@JsonIgnore
 	private Integer version;
 	
 	public ClassDepartmentEntity() {}

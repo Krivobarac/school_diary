@@ -10,8 +10,8 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.securities.Views;
@@ -26,7 +26,7 @@ public class ParentEntity extends UserEntity{
 	@JsonView(Views.User.class)
 	private String email;
 	@ManyToMany(mappedBy = "parents")
-	@JsonManagedReference
+	@JsonBackReference
 	private List<StudentEntity> students = new ArrayList<>();
 	
 	public ParentEntity() {}

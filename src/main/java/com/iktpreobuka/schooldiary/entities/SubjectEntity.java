@@ -30,6 +30,7 @@ public class SubjectEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
 	@JsonView(Views.SuperAdmin.class)
+	@JsonIgnore
 	private Integer idSubject;
 	@JsonView(Views.User.class)
 	@Column(length = 100, nullable = false, unique = true)
@@ -52,6 +53,7 @@ public class SubjectEntity {
 	@JsonIgnore
 	private List<EvaluationEntity> evaluations = new ArrayList<>();
 	@Version
+	@JsonIgnore
 	private Integer version = null;
 	
 	public SubjectEntity() {}

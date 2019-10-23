@@ -36,6 +36,7 @@ import com.iktpreobuka.schooldiary.entities.StreetEntity;
 import com.iktpreobuka.schooldiary.entities.dto.AccountDTO;
 import com.iktpreobuka.schooldiary.entities.dto.DirectorDTO;
 import com.iktpreobuka.schooldiary.entities.dto.EmailDTO;
+import com.iktpreobuka.schooldiary.entities.dto.UserInfoDTO;
 import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.enums.IRole;
 import com.iktpreobuka.schooldiary.repositories.DirectorRepository;
@@ -64,7 +65,7 @@ public class DirectorController {
 	@Autowired
 	private ErrorMessage errMsg;
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN"})
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> addNewDirector(@Valid @RequestBody(required = false) DirectorDTO directorDto, BindingResult result){
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -104,7 +105,7 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getAllDirectors(Principal principal) {
 		try {
@@ -118,7 +119,7 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getDirectorById(@PathVariable Integer id) {
 		try {
@@ -130,7 +131,7 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN"})
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
 	public ResponseEntity<?> deleteDirectorById(@PathVariable Integer id) {
 		try {
@@ -152,7 +153,7 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/{id}")
 	public ResponseEntity<?> updateDirectorById(@Valid @RequestBody(required = false) DirectorDTO directorDto, BindingResult result, @PathVariable Integer id) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -179,7 +180,6 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/forgottenCredential")
 	public ResponseEntity<?> forgottenCredential(@Valid @RequestBody(required = false) EmailDTO emailDto, BindingResult result) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -233,6 +233,27 @@ public class DirectorController {
 				return new ResponseEntity<RestError>(new RestError(405, "Nema rezultata!"), HttpStatus.NOT_FOUND);
 			}
 			return new ResponseEntity<DirectorEntity>(director, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT"})
+	@RequestMapping(method = RequestMethod.GET, value = "/userinfo/{id}")
+	public ResponseEntity<?> getUserInfoById(@PathVariable Integer id) {
+		try {
+			DirectorEntity user = directorRepository.findById(id).get();
+			UserInfoDTO userInfo = new UserInfoDTO();
+			userInfo.setSchoolNumber(Long.toString(user.getSchoolUniqeNumber()));
+			userInfo.setFirstName(user.getFirstName());
+			userInfo.setLastName(user.getLastName());
+			userInfo.setEmail(user.getEmail());
+			userInfo.setJmbg(user.getJmbg());
+			userInfo.setGender(String.valueOf(user.getGender()));
+			userInfo.setAddress(user.getAddress().getStreet().getNameStreet() + " " + user.getAddress().getHouseNumber().getHouseNumber() + ", " + user.getAddress().getCity().getNameCity() + ", " + user.getAddress().getCity().getBorough().getNumberBorough() + " " + user.getAddress().getCity().getBorough().getNameBorough() + ", " + user.getAddress().getCity().getBorough().getCountry());
+			return new ResponseEntity<UserInfoDTO>(userInfo, HttpStatus.OK);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
 			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

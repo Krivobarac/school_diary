@@ -45,6 +45,7 @@ import com.iktpreobuka.schooldiary.entities.dto.EmailDTO;
 import com.iktpreobuka.schooldiary.entities.dto.ParentDTO;
 import com.iktpreobuka.schooldiary.entities.dto.StudentDTO;
 import com.iktpreobuka.schooldiary.entities.dto.StudentParentDTO;
+import com.iktpreobuka.schooldiary.entities.dto.UserInfoDTO;
 import com.iktpreobuka.schooldiary.enums.IClass;
 import com.iktpreobuka.schooldiary.enums.IDepartment;
 import com.iktpreobuka.schooldiary.enums.IGender;
@@ -94,14 +95,15 @@ public class StudentController {
 	public ResponseEntity<?> addNewStudent(@Valid @RequestBody(required = false) StudentParentDTO studentParentDto, BindingResult result, Principal principal){
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(studentParentDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
-		RoleEntity role = roleServ.getRoleByRole(IRole.ROLE_USER);
+		RoleEntity studentRole = roleServ.getRoleByRole(IRole.ROLE_STUDENT);
+		RoleEntity parrentRole = roleServ.getRoleByRole(IRole.ROLE_PARRENT);
 		String studentPassword = studentParentDto.getFirstName().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + studentParentDto.getFirstName().substring(1, 2) + studentParentDto.getLastName().substring(1,2);
 		String studentUserName =  studentParentDto.getParentEmail().substring(0, studentParentDto.getParentEmail().indexOf('@')) + "S" + studentParentDto.getJmbg().substring(studentParentDto.getJmbg().length()-3);
 		String parentPassword = "Vasa sifra za dato korisnicko ime!";
 		String parenttUserName =  studentParentDto.getParentEmail().substring(0, studentParentDto.getParentEmail().indexOf('@')) + "P" + studentParentDto.getParentJmbg().substring(studentParentDto.getJmbg().length()-3);
 		long schoolNumber = studentParentDto.getSchoolNumber();
-		AccountEntity studentAccount = new AccountEntity(studentUserName, new BCryptPasswordEncoder().encode(studentPassword), role);
-		AccountEntity parentAccount = new AccountEntity(parenttUserName, new BCryptPasswordEncoder().encode(parentPassword), role);
+		AccountEntity studentAccount = new AccountEntity(studentUserName, new BCryptPasswordEncoder().encode(studentPassword), studentRole);
+		AccountEntity parentAccount = new AccountEntity(parenttUserName, new BCryptPasswordEncoder().encode(parentPassword), parrentRole);
 		AddressEntity studentAddress = new AddressEntity(new StreetEntity(studentParentDto.getNameStreet()), new HouseNumberEntity(studentParentDto.getHouseNumber()), new CityEntity(studentParentDto.getNameCity(), new BoroughEntity(studentParentDto.getNameBorough(), studentParentDto.getNumberBorough())));
 		AddressEntity parentAddress = new AddressEntity(new StreetEntity(studentParentDto.getParentNameStreet()), new HouseNumberEntity(studentParentDto.getParentHouseNumber()), new CityEntity(studentParentDto.getParentNameCity(), new BoroughEntity(studentParentDto.getParentNameBorough(), studentParentDto.getParentNumberBorough())));
 		try {
@@ -129,7 +131,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getAllStudents() {
 		try {
@@ -143,7 +145,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getStudentById(@PathVariable Integer id) {
 		try {
@@ -155,7 +157,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT"})
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
 	public ResponseEntity<?> deleteStudentById(@PathVariable Integer id) {
 		try {
@@ -205,7 +207,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_USER"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/forgottenCredential/{id}")
 	public ResponseEntity<?> forgottenCredential(@Valid @RequestBody(required = false) EmailDTO emailDto, BindingResult result, @PathVariable Integer id) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -230,7 +232,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_USER"})
+	@Secured(value = {"ROLE_STUDENT", "ROLE_PARRENT"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/changeCredential/{id}")
 	public ResponseEntity<?> changeCredential(@Valid @RequestBody(required = false) AccountDTO accounDto, BindingResult result, @PathVariable Integer id) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -250,7 +252,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET, value = "/school")
 	public ResponseEntity<?> getAllStudentsBySchool(@RequestParam(name = "schoolNumber") String number) {
 		try {
@@ -268,7 +270,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET, value = "/active/school")
 	public ResponseEntity<?> getActiveStudentsBySchool(@RequestParam(name = "schoolNumber") String number) {
 		try {
@@ -286,13 +288,13 @@ public class StudentController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.POST, value = "/setOtherParrent/{id}")
 	public ResponseEntity<?> addOtherParent(@Valid @RequestBody(required = false) ParentDTO parentDto, BindingResult result, @PathVariable Integer id, Principal principal) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(parentDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		try {
-			RoleEntity role = roleServ.getRoleByRole(IRole.ROLE_USER);
+			RoleEntity role = roleServ.getRoleByRole(IRole.ROLE_PARRENT);
 			StudentEntity student = studentRepository.findById(id).get();
 			String parentPassword = parentDto.getParentFirstName().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + parentDto.getParentFirstName().substring(1, 2) + parentDto.getParentLastName().substring(1,2);
 			String parentUserName =  parentDto.getParentEmail().substring(0, parentDto.getParentEmail().indexOf('@')) + "P" + parentDto.getParentJmbg().substring(parentDto.getParentJmbg().length()-3);
@@ -318,12 +320,6 @@ public class StudentController {
 	}
 	
 	@Secured({"ROLE_ADMIN", "ROLE_TEACHER"})
-	@RequestMapping(method = RequestMethod.GET, value = "/toDepartmentClas/{id}")
-	public ResponseEntity<?> addStudentToDepartmentClas(@PathVariable Integer id, Principal principal) {
-		return new ResponseEntity<Principal>(principal, HttpStatus.OK);
-	}
-	
-	@Secured({"ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.POST, value = "/toDepartmentClass/{id}")
 	public ResponseEntity<?> addStudentToDepartmentClass(@PathVariable Integer id, Principal principal) {
 		try {
@@ -386,23 +382,42 @@ public class StudentController {
 		}
 	}
 		
-		@Secured("ROLE_ADMIN")
-		@RequestMapping(method = RequestMethod.GET, value = "/byDepartmentClassForAdmin")
-		public ResponseEntity<?> getStudentsByClassDepartmentForAdmin(@RequestParam(name = "class") String clas, @RequestParam String department, Principal principal) {
-			try {
-				SchoolEntity school = schoolRepository.findByAdminsUserName(principal.getName());
-				SchoolYearEntity schoolYear = schoolYearRepository.findBySchoolYear(LocalDateTime.now().getYear() + "/" + (LocalDateTime.now().getYear()+1));
-				ClassDepartmentEntity classDepartment = classDepartmentRepository.findBySchoolAndSchoolClassAndSchoolYearAndDepartment(school, IClass.valueOf(clas), schoolYear, IDepartment.valueOf(department));
-				if(classDepartment == null) {return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);}
-				return new ResponseEntity<List<StudentEntity>>(classDepartment.getStudents(), HttpStatus.OK);
-			} catch (NoSuchElementException e) {
-				return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
-			} catch (IllegalArgumentException e) {
-				return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: Razred morate upisati sa prvim velikim slovom, odeljenje malim slovom abecede!"), HttpStatus.INTERNAL_SERVER_ERROR);
-			} catch (Exception e) {
-				return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-			}
+	@Secured("ROLE_ADMIN")
+	@RequestMapping(method = RequestMethod.GET, value = "/byDepartmentClassForAdmin")
+	public ResponseEntity<?> getStudentsByClassDepartmentForAdmin(@RequestParam(name = "class") String clas, @RequestParam String department, Principal principal) {
+		try {
+			SchoolEntity school = schoolRepository.findByAdminsUserName(principal.getName());
+			SchoolYearEntity schoolYear = schoolYearRepository.findBySchoolYear(LocalDateTime.now().getYear() + "/" + (LocalDateTime.now().getYear()+1));
+			ClassDepartmentEntity classDepartment = classDepartmentRepository.findBySchoolAndSchoolClassAndSchoolYearAndDepartment(school, IClass.valueOf(clas), schoolYear, IDepartment.valueOf(department));
+			if(classDepartment == null) {return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);}
+			return new ResponseEntity<List<StudentEntity>>(classDepartment.getStudents(), HttpStatus.OK);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
+		} catch (IllegalArgumentException e) {
+			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: Razred morate upisati sa prvim velikim slovom, odeljenje malim slovom abecede!"), HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception e) {
+			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 	
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT"})
+	@RequestMapping(method = RequestMethod.GET, value = "/userinfo/{id}")
+	public ResponseEntity<?> getUserInfoById(@PathVariable Integer id) {
+		try {
+			StudentEntity user = studentRepository.findById(id).get();
+			UserInfoDTO userInfo = new UserInfoDTO();
+			userInfo.setSchoolNumber(Long.toString(user.getSchoolUniqeNumber()));
+			userInfo.setFirstName(user.getFirstName());
+			userInfo.setLastName(user.getLastName());
+			userInfo.setJmbg(user.getJmbg());
+			userInfo.setGender(String.valueOf(user.getGender()));
+			userInfo.setAddress(user.getAddress().getStreet().getNameStreet() + " " + user.getAddress().getHouseNumber().getHouseNumber() + ", " + user.getAddress().getCity().getNameCity() + ", " + user.getAddress().getCity().getBorough().getNumberBorough() + " " + user.getAddress().getCity().getBorough().getNameBorough() + ", " + user.getAddress().getCity().getBorough().getCountry());
+			return new ResponseEntity<UserInfoDTO>(userInfo, HttpStatus.OK);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 	
 }

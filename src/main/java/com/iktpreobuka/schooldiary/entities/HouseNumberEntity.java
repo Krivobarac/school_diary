@@ -28,14 +28,14 @@ public class HouseNumberEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
-	@JsonView(Views.User.class)
+	@JsonIgnore
 	private Integer idNumber;
 	@Column(length = 10, nullable = false, unique = true)
 	@JsonView(Views.User.class)
 	@NotBlank(message = "Stambeni broj je obavezan!")
 	private String houseNumber;
-	@JsonView(Views.SuperAdmin.class)
 	@Version
+	@JsonIgnore
 	private Integer version;
 	@OneToMany(mappedBy = "houseNumber", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	@JsonIgnore

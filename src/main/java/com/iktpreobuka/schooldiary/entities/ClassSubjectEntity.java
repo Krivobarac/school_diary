@@ -14,6 +14,7 @@ import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.iktpreobuka.schooldiary.enums.IClass;
@@ -26,6 +27,7 @@ public class ClassSubjectEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
 	@JsonView(Views.SuperAdmin.class)
+	@JsonIgnore
 	private Integer id;
 	@NotNull(message = "Razred je opavezan!")
 	@JoinColumn(name = "school_class", nullable = false)
@@ -43,6 +45,7 @@ public class ClassSubjectEntity {
 	private Integer fundWeaklyHours;
 	@Version
 	@JsonView(Views.SuperAdmin.class)
+	@JsonIgnore
 	private Integer version;
 	
 	public ClassSubjectEntity(IClass schoolClass, SubjectEntity subject, Integer fundWeaklyHours) {

@@ -33,8 +33,8 @@ import com.iktpreobuka.schooldiary.securities.Views;
 public class AddressEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@JsonView(Views.SuperAdmin.class)
 	@Column(length = 11, nullable = false, unique = true, updatable = false )
+	@JsonIgnore
 	private Integer idAddress;
 	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
 	@JoinColumn(name = "id_city", nullable = false)
@@ -51,8 +51,8 @@ public class AddressEntity {
 	@JsonView(Views.User.class)
 	@JsonManagedReference
 	private HouseNumberEntity houseNumber;
-	@JsonView(Views.SuperAdmin.class)
 	@Version
+	@JsonIgnore
 	private Integer version = null;
 	@JsonIgnore
 	@OneToMany(mappedBy = "address", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})

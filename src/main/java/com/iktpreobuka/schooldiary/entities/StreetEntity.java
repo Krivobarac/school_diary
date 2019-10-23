@@ -31,7 +31,7 @@ public class StreetEntity{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
-	@JsonView(Views.SuperAdmin.class)
+	@JsonIgnore
 	private Integer idStreet;
 	@Column(length = 24, nullable = false, unique = true)
 	@JsonView(Views.User.class)
@@ -42,7 +42,7 @@ public class StreetEntity{
 	@OneToMany(mappedBy = "street", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	private List<AddressEntity> addresses = new ArrayList<>();
 	@Version
-	@JsonView(Views.SuperAdmin.class)
+	@JsonIgnore
 	private Integer version = null;
 	
 	public StreetEntity(String nameStreet) {

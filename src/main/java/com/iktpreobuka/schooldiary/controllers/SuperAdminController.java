@@ -43,6 +43,7 @@ import com.iktpreobuka.schooldiary.entities.dto.AccountDTO;
 import com.iktpreobuka.schooldiary.entities.dto.EmailDTO;
 import com.iktpreobuka.schooldiary.entities.dto.LogDateTimeDTO;
 import com.iktpreobuka.schooldiary.entities.dto.SuperAdminDTO;
+import com.iktpreobuka.schooldiary.entities.dto.UserInfoDTO;
 import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.enums.IRole;
 import com.iktpreobuka.schooldiary.repositories.SuperAdminRepository;
@@ -55,9 +56,9 @@ import com.iktpreobuka.schooldiary.services.UserService;
 
 @Loggable(entered = true, warnOver = 2, warnUnit = TimeUnit.SECONDS)
 @JsonView(Views.SuperAdmin.class)
-@Secured(value = {"ROLE_SUPER_ADMIN"})
+@Secured(value = {"ROLE_SUPERADMIN"})
 @RestController
-@RequestMapping("/schoolDiary/users/sa")
+@RequestMapping("/schoolDiary/users/superadmin")
 public class SuperAdminController {
 
 	@Autowired
@@ -81,7 +82,7 @@ public class SuperAdminController {
 	public ResponseEntity<?> addNewSuperAdmin(@Valid @RequestBody(required = false) SuperAdminDTO superAdminDto, BindingResult result){
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(superAdminDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
-		RoleEntity role = roleServ.getRoleByRole(IRole.ROLE_SUPER_ADMIN);
+		RoleEntity role = roleServ.getRoleByRole(IRole.ROLE_SUPERADMIN);
 		String password = superAdminDto.getFirstName().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + superAdminDto.getFirstName().substring(1, 2) + superAdminDto.getLastName().substring(1,2);
 		String userName =  superAdminDto.getEmail().substring(0, superAdminDto.getEmail().indexOf('@')) + "SA";		
 		try {
@@ -246,7 +247,25 @@ public class SuperAdminController {
 		} catch (Exception e) {
  			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/userinfo/{id}")
+	public ResponseEntity<?> getUserInfoById(@PathVariable Integer id) {
+		try {
+			SuperAdminEntity user = superAdminRepository.findById(id).get();
+			UserInfoDTO userInfo = new UserInfoDTO();
+			userInfo.setFirstName(user.getFirstName());
+			userInfo.setLastName(user.getLastName());
+			userInfo.setEmail(user.getEmail());
+			userInfo.setJmbg(user.getJmbg());
+			userInfo.setGender(String.valueOf(user.getGender()));
+			userInfo.setAddress(user.getAddress().getStreet().getNameStreet() + " " + user.getAddress().getHouseNumber().getHouseNumber() + ", " + user.getAddress().getCity().getNameCity() + ", " + user.getAddress().getCity().getBorough().getNumberBorough() + " " + user.getAddress().getCity().getBorough().getNameBorough() + ", " + user.getAddress().getCity().getBorough().getCountry());
+			return new ResponseEntity<UserInfoDTO>(userInfo, HttpStatus.OK);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 	
 }

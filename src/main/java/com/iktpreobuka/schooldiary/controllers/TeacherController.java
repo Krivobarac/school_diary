@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,6 +41,7 @@ import com.iktpreobuka.schooldiary.entities.TeacherEntity;
 import com.iktpreobuka.schooldiary.entities.dto.AccountDTO;
 import com.iktpreobuka.schooldiary.entities.dto.EmailDTO;
 import com.iktpreobuka.schooldiary.entities.dto.TeacherDTO;
+import com.iktpreobuka.schooldiary.entities.dto.UserInfoDTO;
 import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.enums.IRole;
 import com.iktpreobuka.schooldiary.repositories.SchoolRepository;
@@ -106,7 +108,7 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getAllTeachers() {
 		try {
@@ -120,7 +122,7 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getTeacherById(@PathVariable Integer id) {
 		try {
@@ -132,7 +134,7 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
 	public ResponseEntity<?> deleteTeacherById(@PathVariable Integer id) {
 		try {
@@ -184,9 +186,10 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
+	@CrossOrigin(origins = "http://localhost:3000")
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/forgottenCredential")
-	public ResponseEntity<?> forgottenCredential(@Valid @RequestBody(required = false) EmailDTO emailDto, BindingResult result) {
+	public ResponseEntity<?> forgottenCredential(@Valid @RequestBody EmailDTO emailDto, BindingResult result) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(emailDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		String password = emailDto.getEmail().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + emailDto.getEmail().substring(1, 2) + emailDto.getEmail().substring(0,1);
@@ -226,7 +229,7 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET, value = "/school")
 	public ResponseEntity<?> getTeachersBySchool(@RequestParam(name = "schoolNumber") String number) {
 		try {
@@ -244,7 +247,7 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET, value = "/subject")
 	public ResponseEntity<?> getTeachersBySubject(@RequestParam(name = "subjectName") String subjectName) {
 		try {
@@ -278,6 +281,27 @@ public class TeacherController {
 			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata!"), HttpStatus.NOT_FOUND);
 		} catch (DataIntegrityViolationException e) {
 			return new ResponseEntity<RestError>(new RestError(404, "Nastavnik je vec dodeljen datoj skoli!"), HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT"})
+	@RequestMapping(method = RequestMethod.GET, value = "/userinfo/{id}")
+	public ResponseEntity<?> getUserInfoById(@PathVariable Integer id) {
+		try {
+			TeacherEntity user = teacherRepository.findById(id).get();
+			UserInfoDTO userInfo = new UserInfoDTO();
+			userInfo.setSchoolNumber(Long.toString(user.getSchoolUniqeNumber()));
+			userInfo.setFirstName(user.getFirstName());
+			userInfo.setLastName(user.getLastName());
+			userInfo.setEmail(user.getEmail());
+			userInfo.setJmbg(user.getJmbg());
+			userInfo.setGender(String.valueOf(user.getGender()));
+			userInfo.setAddress(user.getAddress().getStreet().getNameStreet() + " " + user.getAddress().getHouseNumber().getHouseNumber() + ", " + user.getAddress().getCity().getNameCity() + ", " + user.getAddress().getCity().getBorough().getNumberBorough() + " " + user.getAddress().getCity().getBorough().getNameBorough() + ", " + user.getAddress().getCity().getBorough().getCountry());
+			return new ResponseEntity<UserInfoDTO>(userInfo, HttpStatus.OK);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
 			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

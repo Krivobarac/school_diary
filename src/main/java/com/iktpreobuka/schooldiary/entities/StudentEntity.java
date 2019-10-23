@@ -17,7 +17,6 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -37,14 +36,15 @@ public class StudentEntity extends UserEntity{
 	@JsonManagedReference
 	private SchoolEntity school;
 	@NotNull(message = "Razred je obavezan!")
+	@JsonView(Views.User.class)
 	private IClass grade;
-	@JsonIgnore
 	@OneToMany(mappedBy = "students", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	private List<ClassDepartmentEntity> classDepartments;
 	@NotNull(message = "Obavezan unos roditelja!")
+	@JsonView(Views.User.class)
 	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	@JoinTable(uniqueConstraints = @UniqueConstraint(columnNames = {"id_student", "id_parent"}), name = "student_parent", joinColumns = {@JoinColumn(name = "id_student", nullable = false)}, inverseJoinColumns = {@JoinColumn(name = "id_parent", nullable = false)})
-	@JsonBackReference
+	@JsonManagedReference
 	private List<ParentEntity> parents = new ArrayList<>();
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	@NotNull(message = "Obavezan unos skolske godine!")

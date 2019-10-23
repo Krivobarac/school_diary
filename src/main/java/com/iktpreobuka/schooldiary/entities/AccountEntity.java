@@ -38,6 +38,7 @@ public class AccountEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
+	@JsonIgnore
 	private Integer idAccount;
 	@Column(nullable = false, unique = true)
 	@JsonView(Views.SuperAdmin.class)
@@ -58,9 +59,10 @@ public class AccountEntity {
 	@JsonView(Views.Admin.class)
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	@JsonManagedReference
+	@JsonIgnore
 	private RoleEntity role;
-	@JsonView(Views.SuperAdmin.class)
 	@Version
+	@JsonIgnore
 	private Integer version = null;
 	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
 	@JsonBackReference
@@ -73,14 +75,6 @@ public class AccountEntity {
 		this.userName = userName;
 		this.password = password;
 		this.role = role;
-	}
-
-	public Integer getIdUser() {
-		return idAccount;
-	}
-
-	public void setIdUser(Integer idUser) {
-		this.idAccount = idUser;
 	}
 
 	public String getUserName() {

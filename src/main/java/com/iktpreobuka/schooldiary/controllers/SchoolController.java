@@ -50,7 +50,7 @@ public class SchoolController {
 	
 	@JsonView(Views.SuperAdmin.class)
 	@RequestMapping(method = RequestMethod.POST)
-	@Secured("ROLE_SUPER_ADMIN")
+	@Secured("ROLE_SUPERADMIN")
 	public ResponseEntity<?> addNewSchool(@Valid @RequestBody(required = false) SchoolDTO schoolDto, BindingResult result) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(schoolDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
@@ -67,7 +67,7 @@ public class SchoolController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_USER"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT"})
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getAllSchools() {
 		try {
@@ -81,7 +81,7 @@ public class SchoolController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_USER"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT"})
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getSchoolById(@PathVariable Integer id) {
 		try {
@@ -94,7 +94,7 @@ public class SchoolController {
 	}
 	
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
-	@Secured("ROLE_SUPER_ADMIN")
+	@Secured("ROLE_SUPERADMIN")
 	public ResponseEntity<?> deleteSchoolById(@PathVariable Integer id) {
 		try {
 			SchoolEntity school = schoolRepository.findById(id).get();
@@ -112,7 +112,7 @@ public class SchoolController {
 	
 	@JsonView(Views.SuperAdmin.class)
 	@RequestMapping(method = RequestMethod.PUT, value = "/{id}")
-	@Secured("ROLE_SUPER_ADMIN")
+	@Secured("ROLE_SUPERADMIN")
 	public ResponseEntity<?> updateSchoolById(@Valid @RequestBody(required = false) SchoolDTO schoolDto, BindingResult result, @PathVariable Integer id) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(schoolDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
@@ -131,7 +131,7 @@ public class SchoolController {
 	}
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/findByCity")
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_USER"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT"})
 	public ResponseEntity<?> findSchoolsbyCity(@RequestParam String cityName) {
 		try {
 			List<SchoolEntity> schools = schoolRepository.findSchoolsByCityName(cityName);
@@ -147,7 +147,7 @@ public class SchoolController {
 	}
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/findByBorough")
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_USER"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT"})
 	public ResponseEntity<?> findSchoolsbyBorough(@RequestParam String boroughName) {
 		try {
 			List<SchoolEntity> schools = schoolRepository.findSchoolsByBorough(boroughName);
@@ -163,7 +163,7 @@ public class SchoolController {
 	}
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/schoolNoDirector")
-	@Secured({"ROLE_SUPER_ADMIN"})
+	@Secured({"ROLE_SUPERADMIN"})
 	public ResponseEntity<?> getSchoolsNoDirectors() {
 		try {
 			List<SchoolEntity> schools = schoolRepository.findSchoolsNoDirector();

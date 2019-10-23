@@ -16,6 +16,7 @@ import javax.validation.constraints.NotNull;
 
 import com.iktpreobuka.schooldiary.enums.IMark;
 import com.iktpreobuka.schooldiary.enums.ISemester;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.iktpreobuka.schooldiary.enums.IClass;
@@ -27,6 +28,7 @@ public class EvaluationEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
+	@JsonIgnore
 	private Integer idEvalueted;
 	@NotNull(message = "Student je obavezan!")
 	@JoinColumn(name = "id_student", nullable = false)
@@ -51,6 +53,7 @@ public class EvaluationEntity {
 	@NotNull(message = "Ocena je obavezna!")
 	private IMark mark;
 	@Version
+	@JsonIgnore
 	private Integer version = null;
 	
 	public EvaluationEntity() {}

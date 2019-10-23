@@ -40,7 +40,7 @@ public class SchoolEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
-	@JsonView(Views.SuperAdmin.class)
+	@JsonIgnore
 	private Integer idSchool;
 	@Column(length = 11, nullable = false, unique = true)
 	@JsonView(Views.Teacher.class)
@@ -58,7 +58,7 @@ public class SchoolEntity {
 	@JsonManagedReference
 	private AddressEntity address;
 	@Version
-	@JsonView(Views.SuperAdmin.class)
+	@JsonIgnore
 	private Integer version = null;
 	@JsonIgnore
 	@OneToMany(mappedBy = "school", fetch = FetchType.LAZY)
@@ -67,8 +67,8 @@ public class SchoolEntity {
 	@OneToMany(mappedBy = "school", fetch = FetchType.LAZY)
 	private List<AdminEntity> admins;
 	@NotNull
-	@JsonView(Views.SuperAdmin.class)
 	@JsonFormat(pattern = "hh:MM:ss dd.MM.yyyy", shape = JsonFormat.Shape.STRING)
+	@JsonIgnore
 	private LocalDateTime createdAt = LocalDateTime.now();
 	@ManyToMany(mappedBy = "schools")
 	@JsonIgnore

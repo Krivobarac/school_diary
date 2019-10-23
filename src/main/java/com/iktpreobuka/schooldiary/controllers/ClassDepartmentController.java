@@ -88,7 +88,7 @@ public class ClassDepartmentController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getAllClassDepartment() {
 		try {
@@ -102,7 +102,7 @@ public class ClassDepartmentController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getClassDepartmentById(@PathVariable Integer id) {
 		try {
@@ -114,7 +114,7 @@ public class ClassDepartmentController {
 		}
 	}
 
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
 	@RequestMapping(method = RequestMethod.GET, value = "/byNumberSchool")
 	public ResponseEntity<?> getAllclassDepartmentbySchool(@RequestParam String numberSchool) {
 		try {
@@ -130,7 +130,7 @@ public class ClassDepartmentController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
 	@RequestMapping(method = RequestMethod.GET, value = "/bySchoolYear")
 	public ResponseEntity<?> getAllClassDepartmentBySchoolYear(@RequestParam String schoolYear) {
 		try {

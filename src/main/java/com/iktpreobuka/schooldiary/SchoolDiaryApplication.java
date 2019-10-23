@@ -12,7 +12,7 @@ public class SchoolDiaryApplication {
 	
 	@Autowired
 	RoleServiceImpl roleServ;
-
+	
 	@RequestMapping(value = "schoolDiary")
 	public static void main(String[] args) {
 		SpringApplication.run(SchoolDiaryApplication.class, args);

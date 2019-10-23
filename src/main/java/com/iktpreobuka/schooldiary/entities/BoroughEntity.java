@@ -21,6 +21,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.iktpreobuka.schooldiary.enums.ICountry;
@@ -34,7 +35,7 @@ public class BoroughEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
-	@JsonView(Views.SuperAdmin.class)
+	@JsonIgnore
 	private Integer idBorough;
 	@Column(length = 24, nullable = false)
 	@JsonView(Views.User.class)
@@ -51,7 +52,7 @@ public class BoroughEntity {
 	@Enumerated(EnumType.ORDINAL)
 	private ICountry country = ICountry.Srbija;
 	@Column(length = 11)
-	@JsonView(Views.SuperAdmin.class)
+	@JsonIgnore
 	private Integer version = null;
 	@JsonBackReference
 	@OneToMany(mappedBy = "borough", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})

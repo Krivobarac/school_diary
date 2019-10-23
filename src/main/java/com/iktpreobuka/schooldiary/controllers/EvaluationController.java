@@ -80,7 +80,7 @@ public class EvaluationController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPER_ADMIN", "ROLE_TEACHER", "ROLE_ADMIN", "ROLE_USER"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_TEACHER", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT"})
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getAllStudents(Authentication authentication) {
 		try {
@@ -97,9 +97,9 @@ public class EvaluationController {
 				evaluations = (List<EvaluationEntity>) evaluationRepository.findAll();
 			}
 			if(authentication.getAuthorities().toString().equals("[ROLE_USER]")) {
-				evaluations = (List<EvaluationEntity>) evaluationRepository.findByStudentParentsAccountUserName(authentication.getName());
+				evaluations = evaluationRepository.findByStudentParentsAccountUserName(authentication.getName());
 				if (evaluations.size() == 0) {
-					evaluations = (List<EvaluationEntity>) evaluationRepository.findByStudentAccountUserName(authentication.getName());
+					evaluations = evaluationRepository.findByStudentAccountUserName(authentication.getName());
 				}
 			}
 			if(!evaluations.iterator().hasNext()) {
@@ -111,7 +111,7 @@ public class EvaluationController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_TEACHER", "ROLE_ADMIN", "ROLE_USER", "ROLE_SUPER_ADMIN"})
+	@Secured(value = {"ROLE_TEACHER", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT", "ROLE_SUPERADMIN"})
 	@RequestMapping(method = RequestMethod.GET, value = "/student/{id}")
 	public ResponseEntity<?> getStudentById(@PathVariable Integer id, Authentication authentication) {
 		try {

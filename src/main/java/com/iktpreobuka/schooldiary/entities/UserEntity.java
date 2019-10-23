@@ -22,6 +22,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -37,8 +38,8 @@ import com.iktpreobuka.schooldiary.securities.Views;
 public class UserEntity{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@JsonView(Views.SuperAdmin.class)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
+	@JsonView(Views.SuperAdmin.class)
 	protected Integer IdUser;
 	@NotBlank(message = "Ime ne sme biti prazno!")
 	@NotNull(message = "Ime je obavezno!")
@@ -62,7 +63,7 @@ public class UserEntity{
 	@JsonView(Views.User.class)
 	protected IGender gender;
 	@Version
-	@JsonView(Views.SuperAdmin.class)
+	@JsonIgnore
 	protected Integer version;
 	@NotNull
 	@JsonView(Views.Admin.class)
@@ -75,6 +76,7 @@ public class UserEntity{
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "id_account", unique = true)
 	@JsonManagedReference
+	@JsonIgnore
 	protected AccountEntity account;
 	@JsonView(Views.User.class)
 	@JsonManagedReference
@@ -93,11 +95,11 @@ public class UserEntity{
 		this.account = account;
 		this.address = address;
 	}
-
+	
 	public Integer getIdUser() {
 		return IdUser;
 	}
-
+	
 	public void setIdUser(Integer idUser) {
 		IdUser = idUser;
 	}

@@ -34,7 +34,7 @@ public class CityEntity{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
-	@JsonView(Views.SuperAdmin.class)
+	@JsonIgnore
 	private Integer idCity;
 	@Column(length = 24, nullable = false, unique = true)
 	@JsonView(Views.User.class)
@@ -47,7 +47,7 @@ public class CityEntity{
 	@JsonManagedReference
 	private BoroughEntity borough;
 	@Column(length = 11)
-	@JsonView(Views.SuperAdmin.class)
+	@JsonIgnore
 	private Integer version = null;
 	@JsonIgnore
 	@OneToMany(mappedBy = "city", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)

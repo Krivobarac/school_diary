@@ -7,6 +7,7 @@ import org.springframework.validation.Validator;
 import com.iktpreobuka.schooldiary.entities.dto.ClassSubjectDTO;
 import com.iktpreobuka.schooldiary.entities.dto.SubjectDTO;
 
+//Custom validation class for validating SubjectControler Post and Put methods
 @Component
 public class CustomValidator implements Validator {
 

@@ -27,7 +27,7 @@ public class SchoolYearEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
-	@JsonView(Views.SuperAdmin.class)
+	@JsonIgnore
 	private Integer idSchoolYear;
 	@Column(length = 24, nullable = false, unique = true)
 	@JsonView(Views.User.class)
@@ -39,6 +39,7 @@ public class SchoolYearEntity {
 	@JsonIgnore
 	private List<ClassDepartmentEntity> classes = new ArrayList<>();
 	@Version
+	@JsonIgnore
 	private Integer version = null;
 	
 	public SchoolYearEntity() {}
