@@ -2,6 +2,7 @@ package com.iktpreobuka.schooldiary.controllers;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
@@ -32,6 +33,7 @@ import com.iktpreobuka.schooldiary.entities.AddressEntity;
 import com.iktpreobuka.schooldiary.entities.BoroughEntity;
 import com.iktpreobuka.schooldiary.entities.CityEntity;
 import com.iktpreobuka.schooldiary.entities.ClassDepartmentEntity;
+import com.iktpreobuka.schooldiary.entities.ClassSubjectEntity;
 import com.iktpreobuka.schooldiary.entities.HouseNumberEntity;
 import com.iktpreobuka.schooldiary.entities.ParentEntity;
 import com.iktpreobuka.schooldiary.entities.RoleEntity;
@@ -39,6 +41,7 @@ import com.iktpreobuka.schooldiary.entities.SchoolEntity;
 import com.iktpreobuka.schooldiary.entities.SchoolYearEntity;
 import com.iktpreobuka.schooldiary.entities.StreetEntity;
 import com.iktpreobuka.schooldiary.entities.StudentEntity;
+import com.iktpreobuka.schooldiary.entities.TeacherEntity;
 import com.iktpreobuka.schooldiary.entities.UserEntity;
 import com.iktpreobuka.schooldiary.entities.dto.AccountDTO;
 import com.iktpreobuka.schooldiary.entities.dto.EmailDTO;
@@ -51,10 +54,13 @@ import com.iktpreobuka.schooldiary.enums.IDepartment;
 import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.enums.IRole;
 import com.iktpreobuka.schooldiary.repositories.ClassDepartmentRepository;
+import com.iktpreobuka.schooldiary.repositories.ClassSubjectRepository;
 import com.iktpreobuka.schooldiary.repositories.ParentRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolYearRepository;
 import com.iktpreobuka.schooldiary.repositories.StudentRepository;
+import com.iktpreobuka.schooldiary.repositories.SubjectRepository;
+import com.iktpreobuka.schooldiary.repositories.TeacherRepository;
 import com.iktpreobuka.schooldiary.securities.Views;
 import com.iktpreobuka.schooldiary.services.AccountService;
 import com.iktpreobuka.schooldiary.services.AddressService;
@@ -69,9 +75,15 @@ public class StudentController {
 	@Autowired
 	private StudentRepository studentRepository;
 	@Autowired
+	private ClassSubjectRepository classSubjectRepository;
+	@Autowired
+	private SubjectRepository subjectRepository;
+	@Autowired
 	private ParentRepository parentRepository;
 	@Autowired
 	private EmailService emailServ;
+	@Autowired
+	private TeacherRepository teacherRepository;
 	@Autowired
 	private AddressService addressServ;
 	@Autowired
@@ -413,6 +425,26 @@ public class StudentController {
 			userInfo.setGender(String.valueOf(user.getGender()));
 			userInfo.setAddress(user.getAddress().getStreet().getNameStreet() + " " + user.getAddress().getHouseNumber().getHouseNumber() + ", " + user.getAddress().getCity().getNameCity() + ", " + user.getAddress().getCity().getBorough().getNumberBorough() + " " + user.getAddress().getCity().getBorough().getNameBorough() + ", " + user.getAddress().getCity().getBorough().getCountry());
 			return new ResponseEntity<UserInfoDTO>(userInfo, HttpStatus.OK);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
+	@RequestMapping(method = RequestMethod.GET, value = "/studentsByTeacher/{id}")
+	public ResponseEntity<?> studentsByTeacher(@PathVariable Integer id) {
+		try {
+			TeacherEntity teacher = teacherRepository.findById(id).get();
+			List<SchoolEntity> schools = schoolRepository.findByTeachers(teacher);
+			List<ClassSubjectEntity> classSubjects = classSubjectRepository.findBySubject(teacher.getSubject());
+			List<IClass> classes = new ArrayList<>();
+			classSubjects.forEach(classSubject -> classes.add(classSubject.getSchoolClass()));
+			List<ClassDepartmentEntity> classDepartments = classDepartmentRepository.findBySchoolInAndSchoolClassIn(schools, classes);
+			List<StudentEntity> students = studentRepository.findByClassDepartmentsIn(classDepartments);
+			
+			return new ResponseEntity<List<StudentEntity>>(students, HttpStatus.OK);
 		} catch (NoSuchElementException e) {
 			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {

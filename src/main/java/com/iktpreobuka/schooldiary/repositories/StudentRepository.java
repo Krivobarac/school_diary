@@ -16,4 +16,5 @@ public interface StudentRepository extends CrudRepository<StudentEntity, Integer
 	List<StudentEntity> findByParentsAndAccountNotNull(ParentEntity parent);
 	List<StudentEntity> findBySchool(SchoolEntity school);
 	List<StudentEntity> findByClassDepartments(ClassDepartmentEntity classDepartment);
+	List<StudentEntity> findByClassDepartmentsIn(List<ClassDepartmentEntity> classDepartments);
 }

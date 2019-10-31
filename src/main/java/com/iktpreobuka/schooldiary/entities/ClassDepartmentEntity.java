@@ -86,8 +86,8 @@ public class ClassDepartmentEntity {
 		this.idClassDepartment = idClassDepartment;
 	}
 
-	public String getSchoolClass() {
-		return schoolClass + " razred";
+	public IClass getSchoolClass() {
+		return schoolClass;
 	}
 
 	public void setSchoolClass(IClass schoolClass) {

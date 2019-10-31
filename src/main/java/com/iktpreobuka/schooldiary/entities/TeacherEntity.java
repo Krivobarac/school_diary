@@ -17,7 +17,6 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -26,8 +25,8 @@ import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.securities.Views;
 
 @Entity
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"schoolUniqeNumber"}))
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "schoolUniqeNumber" }))
 public class TeacherEntity extends UserEntity {
 	@Column(nullable = false, unique = true, length = 10)
 	@JsonView(Views.User.class)
@@ -43,16 +42,27 @@ public class TeacherEntity extends UserEntity {
 	@JsonManagedReference
 	private SubjectEntity subject;
 	@ManyToMany()
-	@JsonBackReference
-	@JoinTable(uniqueConstraints = @UniqueConstraint(columnNames = {"id_teacher", "id_school"}), name = "teacher_school", joinColumns = {@JoinColumn(name = "id_teacher", nullable = false)}, inverseJoinColumns = {@JoinColumn(name = "id_school", nullable = false)})
+	@JsonManagedReference
+	@JsonView(Views.Admin.class)
+	@JoinTable(uniqueConstraints = @UniqueConstraint(columnNames = { "id_teacher",
+			"id_school" }), name = "teacher_school", joinColumns = {
+					@JoinColumn(name = "id_teacher", nullable = false) }, inverseJoinColumns = {
+							@JoinColumn(name = "id_school", nullable = false) })
 	private List<SchoolEntity> schools = new ArrayList<>();
-	@OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
+
+	public void setSchools(List<SchoolEntity> schools) {
+		this.schools = schools;
+	}
+
+	@OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH })
 	@JsonIgnore
 	private List<EvaluationEntity> evaluations = new ArrayList<>();
-	
-	public TeacherEntity() {}
 
-	public TeacherEntity(String firstName, String lastName, String jmbg, IGender gender, AccountEntity account, AddressEntity address, Long schoolUniqeNumber, String email, SubjectEntity subject, SchoolEntity school) {
+	public TeacherEntity() {
+	}
+
+	public TeacherEntity(String firstName, String lastName, String jmbg, IGender gender, AccountEntity account,
+			AddressEntity address, Long schoolUniqeNumber, String email, SubjectEntity subject, SchoolEntity school) {
 		super(firstName, lastName, jmbg, gender, account, address);
 		this.schoolUniqeNumber = schoolUniqeNumber;
 		this.email = email;
@@ -67,7 +77,7 @@ public class TeacherEntity extends UserEntity {
 	public void setSchoolUniqeNumber(Long schoolUniqeNumber) {
 		this.schoolUniqeNumber = schoolUniqeNumber;
 	}
-	
+
 	public List<SchoolEntity> getSchools() {
 		return schools;
 	}

@@ -18,4 +18,5 @@ public interface ClassDepartmentRepository extends CrudRepository<ClassDepartmen
 	List<ClassDepartmentEntity> findBySchoolAndSchoolClassAndSchoolYear(SchoolEntity school, IClass schoolClass, SchoolYearEntity schoolYear);
 	ClassDepartmentEntity findBySchoolAndSchoolClassAndSchoolYearAndDepartment(SchoolEntity school, IClass schoolClass, SchoolYearEntity schoolYear, IDepartment department);
 	List<ClassDepartmentEntity> findByStudentsAccountNotNull();
+	List<ClassDepartmentEntity> findBySchoolInAndSchoolClassIn(List<SchoolEntity> schools, List<IClass> schoolClasses);
 }

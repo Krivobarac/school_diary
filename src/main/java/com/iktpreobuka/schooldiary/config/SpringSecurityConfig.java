@@ -14,9 +14,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.cors.CorsConfiguration;
 
+import com.iktpreobuka.schooldiary.entities.AccountEntity;
+import com.iktpreobuka.schooldiary.entities.RoleEntity;
 import com.iktpreobuka.schooldiary.entities.UserEntity;
+import com.iktpreobuka.schooldiary.enums.IRole;
+import com.iktpreobuka.schooldiary.repositories.AccountRepository;
 import com.iktpreobuka.schooldiary.repositories.UserRepository;
 
 @EnableGlobalMethodSecurity(securedEnabled = true)
@@ -33,6 +36,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private UserRepository userRepository;
 	
+	@Autowired
+	private AccountRepository accountRepository;
+	
 	@Value("${spring.queries.users-query}")
 	private String usersQuery;
 	
@@ -42,6 +48,13 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	public void configure(AuthenticationManagerBuilder auth) throws Exception {
 		if( ((List<UserEntity>) userRepository.findAll()).size() == 0 ) {
+			AccountEntity mainEntry = new AccountEntity();
+			RoleEntity role = new RoleEntity();
+			role.setRole(IRole.ROLE_SUPERADMIN);
+			mainEntry.setRole(role);
+			mainEntry.setPassword("mainEntry");
+			mainEntry.setUserName("mainEntry");
+			accountRepository.save(mainEntry);
 			usersQuery = "select 'superadmin@fake.com' as principal, '$2a$10$/Lz0Do..XaE5c4S1NtHq4eesy9WoDZrt9UYAVJIcuQmwrKffNi322' as credentials, true where 'superadmin@fake.com' = ?";
 			rolesQuery = "select 'superadmin@fake.com', 'ROLE_SUPER_ADMIN' where 'superadmin@fake.com' = ?";
 		} 

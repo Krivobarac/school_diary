@@ -38,7 +38,6 @@ public class AccountEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
-	@JsonIgnore
 	private Integer idAccount;
 	@Column(nullable = false, unique = true)
 	@JsonView(Views.SuperAdmin.class)

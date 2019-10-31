@@ -3,6 +3,8 @@ package com.iktpreobuka.schooldiary.entities;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -28,7 +30,6 @@ public class EvaluationEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
-	@JsonIgnore
 	private Integer idEvalueted;
 	@NotNull(message = "Student je obavezan!")
 	@JoinColumn(name = "id_student", nullable = false)
@@ -51,6 +52,7 @@ public class EvaluationEntity {
 	private IClass schoolClass;
 	@Column(length = 11, nullable = false)
 	@NotNull(message = "Ocena je obavezna!")
+	@Enumerated(EnumType.ORDINAL)
 	private IMark mark;
 	@Version
 	@JsonIgnore
@@ -68,8 +70,6 @@ public class EvaluationEntity {
 		this.schoolClass = schoolClass;
 		this.mark = mark;
 	}
-
-
 
 	public Integer getIdEvalueted() {
 		return idEvalueted;
@@ -119,8 +119,8 @@ public class EvaluationEntity {
 		this.schoolClass = schoolClass;
 	}
 
-	public IMark getMark() {
-		return mark;
+	public Integer getMark() {
+		return mark.ordinal();
 	}
 
 	public void setMark(IMark mark) {

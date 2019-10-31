@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.iktpreobuka.schooldiary.entities.SchoolEntity;
 import com.iktpreobuka.schooldiary.entities.StudentEntity;
+import com.iktpreobuka.schooldiary.entities.TeacherEntity;
 
 @Repository
 public interface SchoolRepository extends CrudRepository<SchoolEntity, Integer> {
@@ -23,4 +24,5 @@ public interface SchoolRepository extends CrudRepository<SchoolEntity, Integer> 
 	@Query(value = "select se from SchoolEntity se inner join se.teachers te inner join te.account ae where ae.userName = :userName")
 	List<SchoolEntity> findByTeachersUserName(String userName);
 	SchoolEntity findByStudents(StudentEntity student);
+	List<SchoolEntity> findByTeachers(TeacherEntity teacher);
 }

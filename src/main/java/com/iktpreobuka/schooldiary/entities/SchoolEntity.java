@@ -68,7 +68,6 @@ public class SchoolEntity {
 	private List<AdminEntity> admins;
 	@NotNull
 	@JsonFormat(pattern = "hh:MM:ss dd.MM.yyyy", shape = JsonFormat.Shape.STRING)
-	@JsonIgnore
 	private LocalDateTime createdAt = LocalDateTime.now();
 	@ManyToMany(mappedBy = "schools")
 	@JsonIgnore

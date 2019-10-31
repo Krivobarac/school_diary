@@ -126,10 +126,10 @@ public class EvaluationController {
 				TeacherEntity teacher = teacherRepository.findByAccountUserName(authentication.getName());
 				evaluations = evaluationRepository.findByStudentAndTeacher(student, teacher);
 			}
-			if(authentication.getAuthorities().toString().equals("[ROLE_SUPER_ADMIN]")) {
+			if(authentication.getAuthorities().toString().equals("[ROLE_SUPERADMIN]")) {
 				evaluations = (List<EvaluationEntity>) evaluationRepository.findByStudent(student);
 			}
-			if(authentication.getAuthorities().toString().equals("[ROLE_USER]")) {
+			if(authentication.getAuthorities().toString().equals("[ROLE_STUDENT]") || authentication.getAuthorities().toString().equals("[ROLE_PARRENT]")) {
 				evaluations = (List<EvaluationEntity>) evaluationRepository.findByStudent(student);
 			}
 			if(!evaluations.iterator().hasNext()) {
