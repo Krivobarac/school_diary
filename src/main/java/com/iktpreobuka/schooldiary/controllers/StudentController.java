@@ -59,7 +59,6 @@ import com.iktpreobuka.schooldiary.repositories.ParentRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolYearRepository;
 import com.iktpreobuka.schooldiary.repositories.StudentRepository;
-import com.iktpreobuka.schooldiary.repositories.SubjectRepository;
 import com.iktpreobuka.schooldiary.repositories.TeacherRepository;
 import com.iktpreobuka.schooldiary.securities.Views;
 import com.iktpreobuka.schooldiary.services.AccountService;
@@ -76,8 +75,6 @@ public class StudentController {
 	private StudentRepository studentRepository;
 	@Autowired
 	private ClassSubjectRepository classSubjectRepository;
-	@Autowired
-	private SubjectRepository subjectRepository;
 	@Autowired
 	private ParentRepository parentRepository;
 	@Autowired

@@ -10,4 +10,5 @@ import com.iktpreobuka.schooldiary.entities.StudentEntity;
 public interface ParentRepository extends CrudRepository<ParentEntity, Integer> {
 	ParentEntity findParentEntityByJmbgAndAccountNotNull(String jmbg);
 	ParentEntity findByEmailAndStudents(String email, StudentEntity student);
+	ParentEntity findByEmail(String email);
 }

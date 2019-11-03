@@ -1,21 +1,42 @@
 package com.iktpreobuka.schooldiary.controllers;
 
+import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.rozidan.springboot.logger.Loggable;
 import com.iktpreobuka.schooldiary.controllers.utils.ErrorMessage;
+import com.iktpreobuka.schooldiary.controllers.utils.RestError;
+import com.iktpreobuka.schooldiary.entities.AddressEntity;
+import com.iktpreobuka.schooldiary.entities.BoroughEntity;
+import com.iktpreobuka.schooldiary.entities.CityEntity;
+import com.iktpreobuka.schooldiary.entities.HouseNumberEntity;
+import com.iktpreobuka.schooldiary.entities.ParentEntity;
+import com.iktpreobuka.schooldiary.entities.StreetEntity;
+import com.iktpreobuka.schooldiary.entities.dto.AccountDTO;
+import com.iktpreobuka.schooldiary.entities.dto.EmailDTO;
+import com.iktpreobuka.schooldiary.entities.dto.ParentDTO;
+import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.repositories.ParentRepository;
-import com.iktpreobuka.schooldiary.services.AccountService;
 import com.iktpreobuka.schooldiary.services.AddressService;
-import com.iktpreobuka.schooldiary.services.RoleService;
+import com.iktpreobuka.schooldiary.services.EmailService;
 
 @Loggable(entered = true, warnOver = 2, warnUnit = TimeUnit.SECONDS)
 @RestController
-@RequestMapping("/schoolDiary/users/admin")
+@RequestMapping("/schoolDiary/users/parrent")
 public class ParrentController {
 	
 		@Autowired
@@ -23,9 +44,99 @@ public class ParrentController {
 		@Autowired
 		private AddressService addressServ;
 		@Autowired
-		private AccountService accountServ;
-		@Autowired
-		private RoleService roleServ;
+		private EmailService emailServ;
 		@Autowired
 		private ErrorMessage errMsg;
+		
+		@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+		@RequestMapping(method = RequestMethod.PUT, value = "/{id}")
+		public ResponseEntity<?> updateParrentById(@Valid @RequestBody(required = false) ParentDTO parrentDto, BindingResult result, @PathVariable Integer id) {
+			if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
+			if(parrentDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
+			try {
+				ParentEntity parrent = parentRepository.findById(id).get();
+				Integer addressId = parentRepository.findById(id).get().getAddress().getIdAddress();
+				AddressEntity address = new AddressEntity(new StreetEntity(parrentDto.getParentNameStreet()), new HouseNumberEntity(parrentDto.getParentHouseNumber()), new CityEntity(parrentDto.getParentNameCity(), new BoroughEntity(parrentDto.getParentNameBorough(), parrentDto.getParentNumberBorough())));
+				parrent.setFirstName(parrentDto.getParentFirstName());
+				parrent.setLastName(parrentDto.getParentLastName());
+				parrent.setJmbg(parrentDto.getParentJmbg());
+				parrent.setGender(IGender.valueOf(parrentDto.getParentGender()));
+				address = addressServ.update(addressId, address);
+				parrent.setAddress(address);
+				parrent = parentRepository.save(parrent);
+				return new ResponseEntity<ParentEntity>(parrent, HttpStatus.OK);
+			} catch (NumberFormatException e) {
+				return new ResponseEntity<RestError>(new RestError(501, "Morate uneti brojcanu vrednost: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+			} catch (NoSuchElementException e) {
+				return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
+			} catch (Exception e) {
+				return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
+		
+		@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+		@RequestMapping(method = RequestMethod.GET)
+		public ResponseEntity<?> getAllParrents() {
+			try {
+				Iterable<ParentEntity> parrents = parentRepository.findAll();
+				if(!parrents.iterator().hasNext()) {
+					return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
+				}
+				return new ResponseEntity<Iterable<ParentEntity>>(parrents, HttpStatus.OK);
+			} catch (Exception e) {
+				return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
+		
+		@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+		@RequestMapping(method = RequestMethod.GET, value = "/{id}")
+		public ResponseEntity<?> getParrentById(@PathVariable Integer id) {
+			try {
+				return new ResponseEntity<ParentEntity>(parentRepository.findById(id).get(), HttpStatus.OK);
+			} catch (NoSuchElementException e) {
+				return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
+			} catch (Exception e) {
+				return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
+		
+		@RequestMapping(method = RequestMethod.PUT, value = "/forgottenCredential")
+		public ResponseEntity<?> forgottenCredential(@Valid @RequestBody(required = false) EmailDTO emailDto, BindingResult result) {
+			if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
+			if(emailDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
+			String password = emailDto.getEmail().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + emailDto.getEmail().substring(1, 2) + emailDto.getEmail().substring(0,1);
+			String userName =  emailDto.getEmail().substring(0, emailDto.getEmail().indexOf('@')) + "Du";
+			try {
+				ParentEntity parrent = parentRepository.findByEmail(emailDto.getEmail());
+				parrent.getAccount().setPassword(password);
+				parrent.getAccount().setUserName(userName);
+				parrent = parentRepository.save(parrent);
+				emailServ.sendGenerateCredential(parrent.getEmail(), userName, password, parrent.getIdUser(), "director");
+				return new ResponseEntity<ParentEntity>(parrent, HttpStatus.OK);
+			} catch (NoSuchElementException e) {
+				return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
+			} catch (Exception e) {
+				return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
+		
+		@Secured(value = {"ROLE_ADMIN"})
+		@RequestMapping(method = RequestMethod.PUT, value = "/changeCredential/{id}")
+		public ResponseEntity<?> changeCredential(@Valid @RequestBody(required = false) AccountDTO accounDto, BindingResult result, @PathVariable Integer id) {
+			if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
+			if(accounDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
+			try {
+				ParentEntity parrent = parentRepository.findById(id).get();
+				parrent.getAccount().setPassword(accounDto.getPassword());
+				parrent.getAccount().setUserName(accounDto.getUserName());
+				emailServ.changeCredential(parrent.getEmail(), accounDto.getUserName(), accounDto.getPassword(), parrent.getIdUser(), "director");
+				return new ResponseEntity<ParentEntity>(parentRepository.save(parrent), HttpStatus.OK);
+			} catch (NumberFormatException e) {
+				return new ResponseEntity<RestError>(new RestError(501, "Morate uneti brojcanu vrednost: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+			} catch (NoSuchElementException e) {
+				return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
+			} catch (Exception e) {
+				return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
 }
