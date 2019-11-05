@@ -24,7 +24,7 @@ public class LoginController {
 	private UserRepository userRepository;
 	
 	@RequestMapping(method = RequestMethod.GET, value = "login")
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_PARRENT", "ROLE_TEACHER", "ROLE_STUDENT"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_PARRENT", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_DIRECTOR"})
 	public ResponseEntity<?> getLogedUser(Principal principal) {
 		try {
 			UserEntity user = userRepository.findByAccountUserName(principal.getName());

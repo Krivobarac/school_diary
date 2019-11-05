@@ -75,7 +75,7 @@ public class TeacherController {
 	@Autowired
 	private ErrorMessage errMsg;
 	
-	@Secured(value = {"ROLE_ADMIN"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@JsonView(Views.Admin.class)
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> addNewTeacher(@Valid @RequestBody(required = false) TeacherDTO teacherDto, BindingResult result, Principal principal){
@@ -108,7 +108,7 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getAllTeachers() {
 		try {
@@ -122,7 +122,7 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getTeacherById(@PathVariable Integer id) {
 		try {
@@ -134,7 +134,7 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
 	public ResponseEntity<?> deleteTeacherById(@PathVariable Integer id) {
 		try {
@@ -156,7 +156,7 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_ADMIN", "ROLE_TEACHER"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_TEACHER", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/{id}")
 	public ResponseEntity<?> updateTeacherById(@Valid @RequestBody(required = false) TeacherDTO teacherDto, BindingResult result, @PathVariable Integer id) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -187,7 +187,7 @@ public class TeacherController {
 	}
 	
 	@CrossOrigin(origins = "http://localhost:3000")
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/forgottenCredential")
 	public ResponseEntity<?> forgottenCredential(@Valid @RequestBody EmailDTO emailDto, BindingResult result) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -209,7 +209,7 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_ADMIN"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/changeCredential/{id}")
 	public ResponseEntity<?> changeCredential(@Valid @RequestBody(required = false) AccountDTO accounDto, BindingResult result, @PathVariable Integer id) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -229,7 +229,7 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/school")
 	public ResponseEntity<?> getTeachersBySchool(@RequestParam(name = "schoolNumber") String number) {
 		try {
@@ -247,7 +247,7 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/subject")
 	public ResponseEntity<?> getTeachersBySubject(@RequestParam(name = "subjectName") String subjectName) {
 		try {
@@ -265,7 +265,7 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN"})
+	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/addSchoolToTeacher/{id}")
 	public ResponseEntity<?> addSchool(@PathVariable Integer id, @RequestParam Long numberSchool) {
 		try {
@@ -286,7 +286,7 @@ public class TeacherController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/userinfo/{id}")
 	public ResponseEntity<?> getUserInfoById(@PathVariable Integer id) {
 		try {

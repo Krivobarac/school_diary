@@ -44,7 +44,7 @@ public class ClassDepartmentController {
 	private SchoolYearRepository schoolYearRepository;
 	
 	
-	@Secured(value = {"ROLE_ADMIN"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> addStudentToClassDepartment (@RequestParam Long numberSchool) {
 		try {
@@ -88,7 +88,7 @@ public class ClassDepartmentController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getAllClassDepartment() {
 		try {
@@ -102,7 +102,7 @@ public class ClassDepartmentController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getClassDepartmentById(@PathVariable Integer id) {
 		try {
@@ -114,7 +114,7 @@ public class ClassDepartmentController {
 		}
 	}
 
-	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/byNumberSchool")
 	public ResponseEntity<?> getAllclassDepartmentbySchool(@RequestParam String numberSchool) {
 		try {
@@ -130,7 +130,7 @@ public class ClassDepartmentController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/bySchoolYear")
 	public ResponseEntity<?> getAllClassDepartmentBySchoolYear(@RequestParam String schoolYear) {
 		try {

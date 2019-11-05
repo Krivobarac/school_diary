@@ -70,7 +70,7 @@ public class DirectorController {
 	public ResponseEntity<?> addNewDirector(@Valid @RequestBody(required = false) DirectorDTO directorDto, BindingResult result){
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(directorDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
-		RoleEntity role = roleServ.getRoleByRole(IRole.ROLE_ADMIN);
+		RoleEntity role = roleServ.getRoleByRole(IRole.ROLE_DIRECTOR);
 		String password = directorDto.getFirstName().substring(0, 1).toUpperCase() + (new Random().nextInt(900)+100) + "@" + directorDto.getFirstName().substring(1, 2) + directorDto.getLastName().substring(1,2);
 		String userName =  directorDto.getEmail().substring(0, directorDto.getEmail().indexOf('@')) + "D";
 		long schoolNumber = directorDto.getSchoolNumber();
@@ -119,7 +119,7 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getDirectorById(@PathVariable Integer id) {
 		try {
@@ -153,7 +153,7 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/{id}")
 	public ResponseEntity<?> updateDirectorById(@Valid @RequestBody(required = false) DirectorDTO directorDto, BindingResult result, @PathVariable Integer id) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -200,7 +200,7 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_ADMIN"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/changeCredential/{id}")
 	public ResponseEntity<?> changeCredential(@Valid @RequestBody(required = false) AccountDTO accounDto, BindingResult result, @PathVariable Integer id) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -220,7 +220,7 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_USER"})
+	@Secured({"ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_USER", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/school")
 	public ResponseEntity<?> getDirectorBySchool(@RequestParam(name = "idSchool") String id) {
 		try {
@@ -238,7 +238,7 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/userinfo/{id}")
 	public ResponseEntity<?> getUserInfoById(@PathVariable Integer id) {
 		try {

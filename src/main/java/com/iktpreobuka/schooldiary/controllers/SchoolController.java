@@ -67,7 +67,7 @@ public class SchoolController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getAllSchools() {
 		try {
@@ -81,7 +81,7 @@ public class SchoolController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getSchoolById(@PathVariable Integer id) {
 		try {
@@ -131,7 +131,7 @@ public class SchoolController {
 	}
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/findByCity")
-	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT", "ROLE_DIRECTOR"})
 	public ResponseEntity<?> findSchoolsbyCity(@RequestParam String cityName) {
 		try {
 			List<SchoolEntity> schools = schoolRepository.findSchoolsByCityName(cityName);
@@ -147,7 +147,7 @@ public class SchoolController {
 	}
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/findByBorough")
-	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT", "ROLE_DIRECTOR"})
 	public ResponseEntity<?> findSchoolsbyBorough(@RequestParam String boroughName) {
 		try {
 			List<SchoolEntity> schools = schoolRepository.findSchoolsByBorough(boroughName);

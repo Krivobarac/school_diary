@@ -53,7 +53,7 @@ public class EvaluationController {
 	private EmailService emailServ;
 
 	@RequestMapping(method = RequestMethod.POST, value = "/student/{id}")
-	@Secured({"ROLE_TEACHER"})
+	@Secured({"ROLE_TEACHER", "ROLE_DIRECTOR", "ROLE_ADMIN"})
 	public ResponseEntity<?> addNewMark(@RequestParam Integer mark, @PathVariable Integer id, Principal principal) {
 		try {
 			StudentEntity student = studentRepository.findById(id).get();
@@ -80,12 +80,12 @@ public class EvaluationController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_TEACHER", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_TEACHER", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getAllStudents(Authentication authentication) {
 		try {
 			List<EvaluationEntity> evaluations = new ArrayList<>();
-			if(authentication.getAuthorities().toString().equals("[ROLE_ADMIN]")) {
+			if(authentication.getAuthorities().toString().equals("[ROLE_ADMIN]") || authentication.getAuthorities().toString().equals("[ROLE_DIRECTOR]")) {
 				AdminEntity admin = adminRepository.findByAccountUserName(authentication.getName());
 				evaluations = evaluationRepository.findByStudentSchoolAdmins(admin);
 			}
@@ -111,14 +111,14 @@ public class EvaluationController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_TEACHER", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT", "ROLE_SUPERADMIN"})
+	@Secured(value = {"ROLE_TEACHER", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT", "ROLE_SUPERADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/student/{id}")
 	public ResponseEntity<?> getStudentById(@PathVariable Integer id, Authentication authentication) {
 		try {
 			StudentEntity student = studentRepository.findById(id).orElse(null);
 			if(student == null) {return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata za datog studenta!"), HttpStatus.NOT_FOUND);}
 			List<EvaluationEntity> evaluations = new ArrayList<>();
-			if(authentication.getAuthorities().toString().equals("[ROLE_ADMIN]")) {
+			if(authentication.getAuthorities().toString().equals("[ROLE_ADMIN]") || authentication.getAuthorities().toString().equals("[ROLE_DIRECTOR]")) {
 				AdminEntity admin = adminRepository.findByAccountUserName(authentication.getName());
 				evaluations = evaluationRepository.findByStudentAndStudentSchoolAdmins(student, admin);
 			}
@@ -141,7 +141,7 @@ public class EvaluationController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_TEACHER", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_TEACHER", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/student/{id}/evaluation/{idE}")
 	public ResponseEntity<?> changeMarkToStudent(@PathVariable Integer id, @PathVariable Integer idE, @RequestParam Integer mark, Authentication authentication) {
 		try {
@@ -149,7 +149,7 @@ public class EvaluationController {
 			if(student == null) {return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata za datog studenta!"), HttpStatus.NOT_FOUND);}
 			EvaluationEntity evaluation = null;
 			AdminEntity admin =  null;
-			if(authentication.getAuthorities().toString().equals("[ROLE_ADMIN]")) {
+			if(authentication.getAuthorities().toString().equals("[ROLE_ADMIN]") || authentication.getAuthorities().toString().equals("[ROLE_DIRECTOR]")) {
 				admin = adminRepository.findByAccountUserName(authentication.getName());
 				evaluation = evaluationRepository.findByIdEvaluetedAndStudentAndStudentSchoolAdmins(idE, student, admin);
 			}
@@ -179,7 +179,7 @@ public class EvaluationController {
 		}
 	} 
 	
-	@Secured(value = {"ROLE_TEACHER", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_TEACHER", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}/student/{idS}")
 	public ResponseEntity<?> deleteEvaluation(@PathVariable Integer id, @PathVariable Integer idS, Authentication authentication) {
 		StudentEntity student = studentRepository.findById(idS).orElse(null);

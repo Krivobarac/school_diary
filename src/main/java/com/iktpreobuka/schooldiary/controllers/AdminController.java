@@ -66,7 +66,7 @@ public class AdminController {
 	private ErrorMessage errMsg;
 	
 	
-	@Secured(value = {"ROLE_ADMIN"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> addNewAdmin(@Valid @RequestBody(required = false) AdminDTO adminDto, BindingResult result){
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -108,7 +108,7 @@ public class AdminController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getAllAdmins() {
 		try {
@@ -122,7 +122,7 @@ public class AdminController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getAdminById(@PathVariable Integer id) {
 		try {
@@ -134,7 +134,7 @@ public class AdminController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
 	public ResponseEntity<?> deleteAdminById(@PathVariable Integer id) {
 		try {
@@ -156,7 +156,7 @@ public class AdminController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/{id}")
 	public ResponseEntity<?> updateAdminById(@Valid @RequestBody(required = false) AdminDTO adminDto, BindingResult result, @PathVariable Integer id) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -204,7 +204,7 @@ public class AdminController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_ADMIN"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/changeCredential/{id}")
 	public ResponseEntity<?> changeCredential(@Valid @RequestBody(required = false) AccountDTO accounDto, BindingResult result, @PathVariable Integer id) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -224,7 +224,7 @@ public class AdminController {
 		}
 	}
 	
-	@Secured({"ROLESUPER_ADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_USER"})
+	@Secured({"ROLESUPER_ADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_USER", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/school")
 	public ResponseEntity<?> getAdminBySchool(@RequestParam(name = "idSchool") String id) {
 		try {
@@ -242,7 +242,7 @@ public class AdminController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/userinfo/{id}")
 	public ResponseEntity<?> getUserInfoById(@PathVariable Integer id) {
 		try {

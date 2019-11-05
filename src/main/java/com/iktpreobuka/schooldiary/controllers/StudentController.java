@@ -98,7 +98,7 @@ public class StudentController {
 	@Autowired
 	private ErrorMessage errMsg;
 	
-	@Secured(value = {"ROLE_ADMIN"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@JsonView(Views.Admin.class)
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> addNewStudent(@Valid @RequestBody(required = false) StudentParentDTO studentParentDto, BindingResult result, Principal principal){
@@ -140,7 +140,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getAllStudents() {
 		try {
@@ -154,7 +154,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getStudentById(@PathVariable Integer id) {
 		try {
@@ -166,7 +166,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT", "ROLE_PARRENT", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
 	public ResponseEntity<?> deleteStudentById(@PathVariable Integer id) {
 		try {
@@ -190,7 +190,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_ADMIN"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/{id}")
 	public ResponseEntity<?> updateStudentById(@Valid @RequestBody(required = false) StudentDTO studentDto, BindingResult result, @PathVariable Integer id) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -216,7 +216,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/forgottenCredential/{id}")
 	public ResponseEntity<?> forgottenCredential(@Valid @RequestBody(required = false) EmailDTO emailDto, BindingResult result, @PathVariable Integer id) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -261,7 +261,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/school")
 	public ResponseEntity<?> getAllStudentsBySchool(@RequestParam(name = "schoolNumber") String number) {
 		try {
@@ -279,7 +279,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/active/school")
 	public ResponseEntity<?> getActiveStudentsBySchool(@RequestParam(name = "schoolNumber") String number) {
 		try {
@@ -297,7 +297,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured({"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.POST, value = "/setOtherParrent/{id}")
 	public ResponseEntity<?> addOtherParent(@Valid @RequestBody(required = false) ParentDTO parentDto, BindingResult result, @PathVariable Integer id, Principal principal) {
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -328,7 +328,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured({"ROLE_ADMIN", "ROLE_TEACHER"})
+	@Secured({"ROLE_ADMIN", "ROLE_TEACHER", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.POST, value = "/toDepartmentClass/{id}")
 	public ResponseEntity<?> addStudentToDepartmentClass(@PathVariable Integer id, Principal principal) {
 		try {
@@ -391,7 +391,7 @@ public class StudentController {
 		}
 	}
 		
-	@Secured("ROLE_ADMIN")
+	@Secured({"ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/byDepartmentClassForAdmin")
 	public ResponseEntity<?> getStudentsByClassDepartmentForAdmin(@RequestParam(name = "class") String clas, @RequestParam String department, Principal principal) {
 		try {
@@ -409,7 +409,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_STUDENT", "ROLE_PARRENT", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/userinfo/{id}")
 	public ResponseEntity<?> getUserInfoById(@PathVariable Integer id) {
 		try {
@@ -429,7 +429,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/studentsByTeacher/{id}")
 	public ResponseEntity<?> studentsByTeacher(@PathVariable Integer id) {
 		try {
@@ -441,6 +441,20 @@ public class StudentController {
 			List<ClassDepartmentEntity> classDepartments = classDepartmentRepository.findBySchoolInAndSchoolClassIn(schools, classes);
 			List<StudentEntity> students = studentRepository.findByClassDepartmentsIn(classDepartments);
 			
+			return new ResponseEntity<List<StudentEntity>>(students, HttpStatus.OK);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_TEACHER", "ROLE_PARRENT", "ROLE_DIRECTOR"})
+	@RequestMapping("/studentsByParrent/{id}")
+	public ResponseEntity<?> studentsByParrent(@PathVariable Integer id) {
+		try {
+			ParentEntity parrent = parentRepository.findById(id).get();
+			List<StudentEntity> students = studentRepository.findByParents(parrent);
 			return new ResponseEntity<List<StudentEntity>>(students, HttpStatus.OK);
 		} catch (NoSuchElementException e) {
 			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);

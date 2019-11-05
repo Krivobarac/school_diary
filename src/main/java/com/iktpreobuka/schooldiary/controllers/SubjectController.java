@@ -129,7 +129,7 @@ public class SubjectController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getAllSubjets() {
 		try {
@@ -143,7 +143,7 @@ public class SubjectController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getSubjectById(@PathVariable Integer id) {
 		try {
@@ -155,7 +155,7 @@ public class SubjectController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/activity")
 	public ResponseEntity<?> getSubjectsByActivity(@RequestParam(required = false) Boolean activity) {
 		if(activity == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
@@ -170,7 +170,7 @@ public class SubjectController {
 		}
 	}
 
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.GET, value = "/optionality")
 	public ResponseEntity<?> getSubjectsByOptionality(@RequestParam(required = false) Boolean optionality) {
 		if(optionality == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
