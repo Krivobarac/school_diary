@@ -41,7 +41,7 @@ public class CustomValidator implements Validator {
 			if (classSubjectDto.getFundWeaklyHours() == null) {
 				errors.reject("400", text + field + "/" + subField + ": Nedeljni broj casova je obavezan!");
 			}
-			if (String.valueOf(classSubjectDto.getFundWeaklyHours()).isBlank() || String.valueOf(classSubjectDto.getFundWeaklyHours()).contains("123456789")) {
+			if (String.valueOf(classSubjectDto.getFundWeaklyHours()).equals(null) || String.valueOf(classSubjectDto.getFundWeaklyHours()).contains("123456789")) {
 				errors.reject("400", text + field + "/" + subField + ": Nedeljni broj casova mora biti broj!");
 			}
 		}
