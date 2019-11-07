@@ -6,6 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import com.iktpreobuka.schooldiary.entities.AdminEntity;
+import com.iktpreobuka.schooldiary.entities.DirectorEntity;
 import com.iktpreobuka.schooldiary.entities.EvaluationEntity;
 import com.iktpreobuka.schooldiary.entities.StudentEntity;
 import com.iktpreobuka.schooldiary.entities.TeacherEntity;
@@ -21,4 +22,5 @@ public interface EvaluationRepository extends CrudRepository<EvaluationEntity, I
 	EvaluationEntity findByIdEvaluetedAndStudentAndTeacher(Integer id, StudentEntity student, TeacherEntity teacher);
 	List<EvaluationEntity> findByStudentParentsAccountUserName(String username);
 	List<EvaluationEntity> findByStudentAccountUserName(String username);
+	List<EvaluationEntity> findByStudentAndStudentSchoolDirectors(StudentEntity student, DirectorEntity director);
 }

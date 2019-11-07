@@ -12,4 +12,5 @@ public interface DirectorRepository extends CrudRepository<DirectorEntity, Integ
 	DirectorEntity findByEmail(String email);
 	@Query(value = "select de from DirectorEntity de where de.account != null and de.school = :school")
 	DirectorEntity findBySchool(SchoolEntity school);
+	DirectorEntity findByAccountUserName(String userName);
 }

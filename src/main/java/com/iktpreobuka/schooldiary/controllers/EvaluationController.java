@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.github.rozidan.springboot.logger.Loggable;
 import com.iktpreobuka.schooldiary.controllers.utils.RestError;
 import com.iktpreobuka.schooldiary.entities.AdminEntity;
+import com.iktpreobuka.schooldiary.entities.DirectorEntity;
 import com.iktpreobuka.schooldiary.entities.EvaluationEntity;
 import com.iktpreobuka.schooldiary.entities.SchoolEntity;
 import com.iktpreobuka.schooldiary.entities.StudentEntity;
@@ -28,6 +29,7 @@ import com.iktpreobuka.schooldiary.entities.TeacherEntity;
 import com.iktpreobuka.schooldiary.enums.IMark;
 import com.iktpreobuka.schooldiary.enums.ISemester;
 import com.iktpreobuka.schooldiary.repositories.AdminRepository;
+import com.iktpreobuka.schooldiary.repositories.DirectorRepository;
 import com.iktpreobuka.schooldiary.repositories.EvaluationRepository;
 import com.iktpreobuka.schooldiary.repositories.SchoolRepository;
 import com.iktpreobuka.schooldiary.repositories.StudentRepository;
@@ -44,6 +46,8 @@ public class EvaluationController {
 	@Autowired
 	private SchoolRepository schoolRepository;
 	@Autowired
+	private DirectorRepository directorRepository;
+	@Autowired
 	private StudentRepository studentRepository;
 	@Autowired
 	private AdminRepository adminRepository;
@@ -52,16 +56,16 @@ public class EvaluationController {
 	@Autowired
 	private EmailService emailServ;
 
-	@RequestMapping(method = RequestMethod.POST, value = "/student/{id}")
-	@Secured({"ROLE_TEACHER", "ROLE_DIRECTOR", "ROLE_ADMIN"})
-	public ResponseEntity<?> addNewMark(@RequestParam Integer mark, @PathVariable Integer id, Principal principal) {
+	@RequestMapping(method = RequestMethod.POST, value = "/student/{id}/teacher/{username}")
+	@Secured({"ROLE_TEACHER", "ROLE_DIRECTOR", "ROLE_ADMIN", "ROLE_SUPERADMIN"})
+	public ResponseEntity<?> addNewMark(@RequestParam Integer mark, @PathVariable Integer id, @PathVariable String username, Principal principal) {
 		try {
 			StudentEntity student = studentRepository.findById(id).get();
-			TeacherEntity teacher =  teacherRepository.findByAccountUserName(principal.getName());
+			TeacherEntity teacher =  teacherRepository.findByAccountUserName(username);
 			ISemester semester = (LocalDateTime.now().getMonth().getValue() > 8 && LocalDateTime.now().getMonth().getValue() < 1) ? ISemester.Prvo : ISemester.Drugo;
 			IMark marked = IMark.values()[mark];
 			SchoolEntity school = schoolRepository.findByStudents(student);
-			List<SchoolEntity> schools = schoolRepository.findByTeachersUserName(principal.getName());
+			List<SchoolEntity> schools = schoolRepository.findByTeachersUserName(username);
 			Boolean isSet = false;
 			for (SchoolEntity s : schools) {
 				if (s.equals(school)) {isSet = true;}
@@ -118,9 +122,13 @@ public class EvaluationController {
 			StudentEntity student = studentRepository.findById(id).orElse(null);
 			if(student == null) {return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata za datog studenta!"), HttpStatus.NOT_FOUND);}
 			List<EvaluationEntity> evaluations = new ArrayList<>();
-			if(authentication.getAuthorities().toString().equals("[ROLE_ADMIN]") || authentication.getAuthorities().toString().equals("[ROLE_DIRECTOR]")) {
+			if(authentication.getAuthorities().toString().equals("[ROLE_ADMIN]")) {
 				AdminEntity admin = adminRepository.findByAccountUserName(authentication.getName());
 				evaluations = evaluationRepository.findByStudentAndStudentSchoolAdmins(student, admin);
+			}
+			if(authentication.getAuthorities().toString().equals("[ROLE_DIRECTOR]")) {
+				DirectorEntity director = directorRepository.findByAccountUserName(authentication.getName());
+				evaluations = evaluationRepository.findByStudentAndStudentSchoolDirectors(student, director);
 			}
 			if(authentication.getAuthorities().toString().equals("[ROLE_TEACHER]")) {
 				TeacherEntity teacher = teacherRepository.findByAccountUserName(authentication.getName());
@@ -133,9 +141,11 @@ public class EvaluationController {
 				evaluations = (List<EvaluationEntity>) evaluationRepository.findByStudent(student);
 			}
 			if(!evaluations.iterator().hasNext()) {
-				return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata!"), HttpStatus.NOT_FOUND);
+				return new ResponseEntity<RestError>(new RestError(403, "Nema rezultata!"), HttpStatus.FORBIDDEN);
 			}
 			return new ResponseEntity<List<EvaluationEntity>>(evaluations, HttpStatus.OK);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
 			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -151,6 +161,7 @@ public class EvaluationController {
 			AdminEntity admin =  null;
 			if(authentication.getAuthorities().toString().equals("[ROLE_ADMIN]") || authentication.getAuthorities().toString().equals("[ROLE_DIRECTOR]")) {
 				admin = adminRepository.findByAccountUserName(authentication.getName());
+				System.out.println(admin);
 				evaluation = evaluationRepository.findByIdEvaluetedAndStudentAndStudentSchoolAdmins(idE, student, admin);
 			}
 			if(authentication.getAuthorities().toString().equals("[ROLE_TEACHER]")) {
@@ -180,28 +191,18 @@ public class EvaluationController {
 	} 
 	
 	@Secured(value = {"ROLE_TEACHER", "ROLE_ADMIN", "ROLE_DIRECTOR"})
-	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}/student/{idS}")
-	public ResponseEntity<?> deleteEvaluation(@PathVariable Integer id, @PathVariable Integer idS, Authentication authentication) {
+	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}/student/{idS}/teacher/{username}")
+	public ResponseEntity<?> deleteEvaluation(@PathVariable Integer id, @PathVariable Integer idS, String username, Authentication authentication) {
 		StudentEntity student = studentRepository.findById(idS).orElse(null);
 		if(student == null) {return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata za datog studenta!"), HttpStatus.NOT_FOUND);}
 		try {
 			EvaluationEntity evaluation = null;
-			AdminEntity admin =  null;
-			if(authentication.getAuthorities().toString().equals("[ROLE_ADMIN]")) {
-				admin = adminRepository.findByAccountUserName(authentication.getName());
-				evaluation = evaluationRepository.findByIdEvaluetedAndStudentAndStudentSchoolAdmins(id, student, admin);
-			}
-			if(authentication.getAuthorities().toString().equals("[ROLE_TEACHER]")) {
-				TeacherEntity teacher = teacherRepository.findByAccountUserName(authentication.getName());
-				evaluation = evaluationRepository.findByIdEvaluetedAndStudentAndTeacher(id, student, teacher);
-			}
+			evaluation = evaluationRepository.findById(id).get();
 			if(evaluation == null) {
 				return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata!"), HttpStatus.NOT_FOUND);
 			}
 			evaluationRepository.delete(evaluation);
-			if (admin != null) {
-				emailServ.sendUpdatedMark(evaluation.getTeacher().getEmail(), student.getIdUser());
-			}
+			emailServ.sendUpdatedMark(evaluation.getTeacher().getEmail(), student.getIdUser());
 			emailServ.sendDeletedMark(student.getParents().get(0).getEmail(), student.getIdUser());
 			if(!student.getParents().get(1).equals(null)) {
 				emailServ.sendDeletedMark(student.getParents().get(1).getEmail(), student.getIdUser());

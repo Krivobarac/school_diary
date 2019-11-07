@@ -49,7 +49,7 @@ public class AdminEntity extends UserEntity {
 		super();
 	}
 
-	public SchoolEntity getSchools() {
+	public SchoolEntity getSchool() {
 		return school;
 	}
 
