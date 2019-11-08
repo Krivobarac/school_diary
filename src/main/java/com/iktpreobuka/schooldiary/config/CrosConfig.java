@@ -11,6 +11,6 @@ public class CrosConfig implements WebMvcConfigurer {
 	@Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**").allowedOrigins("*")
-        .allowedMethods("GET", "PUT", "POST", "DELETE", "OPTION");
+        .allowedMethods("GET", "PUT", "POST", "DELETE", "OPTIONS");
     }
 }
