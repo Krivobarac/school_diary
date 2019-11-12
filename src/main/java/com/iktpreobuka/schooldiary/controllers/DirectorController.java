@@ -65,7 +65,7 @@ public class DirectorController {
 	@Autowired
 	private ErrorMessage errMsg;
 	
-	@Secured(value = {"ROLE_SUPERADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> addNewDirector(@Valid @RequestBody(required = false) DirectorDTO directorDto, BindingResult result){
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
@@ -131,7 +131,7 @@ public class DirectorController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
 	public ResponseEntity<?> deleteDirectorById(@PathVariable Integer id) {
 		try {

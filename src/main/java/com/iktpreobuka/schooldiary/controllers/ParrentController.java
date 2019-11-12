@@ -1,5 +1,6 @@
 package com.iktpreobuka.schooldiary.controllers;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
@@ -22,18 +23,21 @@ import org.springframework.web.bind.annotation.RestController;
 import com.github.rozidan.springboot.logger.Loggable;
 import com.iktpreobuka.schooldiary.controllers.utils.ErrorMessage;
 import com.iktpreobuka.schooldiary.controllers.utils.RestError;
+import com.iktpreobuka.schooldiary.entities.AccountEntity;
 import com.iktpreobuka.schooldiary.entities.AddressEntity;
 import com.iktpreobuka.schooldiary.entities.BoroughEntity;
 import com.iktpreobuka.schooldiary.entities.CityEntity;
 import com.iktpreobuka.schooldiary.entities.HouseNumberEntity;
 import com.iktpreobuka.schooldiary.entities.ParentEntity;
 import com.iktpreobuka.schooldiary.entities.StreetEntity;
+import com.iktpreobuka.schooldiary.entities.TeacherEntity;
 import com.iktpreobuka.schooldiary.entities.dto.AccountDTO;
 import com.iktpreobuka.schooldiary.entities.dto.EmailDTO;
 import com.iktpreobuka.schooldiary.entities.dto.ParentDTO;
 import com.iktpreobuka.schooldiary.entities.dto.UserInfoDTO;
 import com.iktpreobuka.schooldiary.enums.IGender;
 import com.iktpreobuka.schooldiary.repositories.ParentRepository;
+import com.iktpreobuka.schooldiary.services.AccountService;
 import com.iktpreobuka.schooldiary.services.AddressService;
 import com.iktpreobuka.schooldiary.services.EmailService;
 
@@ -44,6 +48,8 @@ public class ParrentController {
 
 	@Autowired
 	private ParentRepository parentRepository;
+	@Autowired
+	private AccountService accountServ;
 	@Autowired
 	private AddressService addressServ;
 	@Autowired
@@ -172,6 +178,28 @@ public class ParrentController {
 				return new ResponseEntity<RestError>(new RestError(410, "Nema rezultata!"), HttpStatus.NOT_FOUND);
 			}
 			return new ResponseEntity<List<ParentEntity>>(parrents, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
+	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
+	public ResponseEntity<?> deleteTeacherById(@PathVariable Integer id) {
+		try {
+			ParentEntity parent = parentRepository.findById(id).get();
+			AccountEntity account = parent.getAccount();
+			parent.setDeletedAt(LocalDateTime.now());
+			String username = parent.getAccount().getUserName();
+			parent.setAccount(null);
+			parentRepository.save(parent);
+			accountServ.delete(account);
+			emailServ.deleteCredential(parent.getEmail(), username);
+			return new ResponseEntity<ParentEntity>(parent, HttpStatus.OK);
+		} catch (NumberFormatException e) {
+			return new ResponseEntity<RestError>(new RestError(501, "Morate uneti brojcanu vrednost: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
 			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

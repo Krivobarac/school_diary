@@ -131,6 +131,7 @@ public class StudentController {
 			AccountEntity accountS = accountServ.save(studentAccount);
 			StudentEntity student = new StudentEntity(studentParentDto.getFirstName(), studentParentDto.getLastName(), studentParentDto.getJmbg(), IGender.valueOf(studentParentDto.getGender()), accountS, addressS, schoolUniqeNumber, school, IClass.values()[studentParentDto.getGrade()], schoolYear, parent);
 			student = studentRepository.save(student);
+			addStudentToDepartmentClass(student.getIdUser(), principal);
 			emailServ.sendStudentsAndParentsCredential(studentParentDto.getParentEmail(), parenttUserName, studentUserName, parentPassword, studentPassword, parent.getIdUser(), student.getIdUser(), "parent", "student");
 			return new ResponseEntity<StudentEntity>(student, HttpStatus.CREATED);
 		} catch (DataIntegrityViolationException e) {
@@ -154,7 +155,7 @@ public class StudentController {
 		}
 	}
 	
-	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR", "ROLE_STUDENT"})
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getStudentById(@PathVariable Integer id) {
 		try {
@@ -310,16 +311,15 @@ public class StudentController {
 			AccountEntity parentAccount = new AccountEntity(parentUserName, new BCryptPasswordEncoder().encode(parentPassword), role);
 			AddressEntity parentAddress = new AddressEntity(new StreetEntity(parentDto.getParentNameStreet()), new HouseNumberEntity(parentDto.getParentHouseNumber()), new CityEntity(parentDto.getParentNameCity(), new BoroughEntity(parentDto.getParentNameBorough(), parentDto.getParentNumberBorough())));
 			ParentEntity parent = parentRepository.findParentEntityByJmbgAndAccountNotNull(parentDto.getParentJmbg());
-			parentAddress = addressServ.save(parentAddress);
 			if (parent == null) {
+				parentAddress = addressServ.save(parentAddress);
 				parentAccount = accountServ.save(parentAccount);
-				parent = new ParentEntity(parentDto.getParentFirstName(), parentDto.getParentLastName(), parentDto.getParentJmbg(), IGender.valueOf(parentDto.getParentGender()), parentAccount, parentAddress, parentDto.getParentEmail());
+				parent = new ParentEntity(parentDto.getParentFirstName(), parentDto.getParentLastName(), parentDto.getParentJmbg(), IGender.valueOf(parentDto.getParentGender()), parentAccount, parentAddress, parentDto.getParentEmail(), student);
 				parent = parentRepository.save(parent);
-				student.getParents().add(parent);
+				emailServ.sendCredential(parentDto.getParentEmail(), parentUserName, parentPassword, parent.getIdUser(), role.getRole().toString());
 			}
 			parentPassword = "Vasa sifra za dato korisnicko ime!"; 
-			student = studentRepository.save(student);
-			emailServ.sendStudentsAndParentsCredential(parentDto.getParentEmail(), parentUserName, null, parentPassword, null, parent.getIdUser(), student.getIdUser(), "parent", "student");
+			
 			return new ResponseEntity<StudentEntity>(student, HttpStatus.CREATED);
 		} catch (DataIntegrityViolationException e) {
 			return new ResponseEntity<RestError>(new RestError(550, "Exception occurred: Korisnik sa ovom rolom postoji"), HttpStatus.BAD_REQUEST);

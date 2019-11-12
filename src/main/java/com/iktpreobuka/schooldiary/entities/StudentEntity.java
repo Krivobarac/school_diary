@@ -16,6 +16,8 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Cascade;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -38,7 +40,8 @@ public class StudentEntity extends UserEntity{
 	@NotNull(message = "Razred je obavezan!")
 	@JsonView(Views.User.class)
 	private IClass grade;
-	@OneToMany(mappedBy = "students", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
+	@JsonManagedReference
+	@OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	private List<ClassDepartmentEntity> classDepartments;
 	@NotNull(message = "Obavezan unos roditelja!")
 	@JsonView(Views.User.class)

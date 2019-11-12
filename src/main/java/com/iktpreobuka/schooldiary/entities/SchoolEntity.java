@@ -40,7 +40,7 @@ public class SchoolEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(length = 11, nullable = false, unique = true, updatable = false)
-	@JsonIgnore
+	@JsonView(Views.Admin.class)
 	private Integer idSchool;
 	@Column(length = 11, nullable = false, unique = true)
 	@JsonView(Views.Teacher.class)

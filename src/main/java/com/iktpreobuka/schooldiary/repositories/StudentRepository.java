@@ -2,6 +2,7 @@ package com.iktpreobuka.schooldiary.repositories;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,4 +19,6 @@ public interface StudentRepository extends CrudRepository<StudentEntity, Integer
 	List<StudentEntity> findByClassDepartments(ClassDepartmentEntity classDepartment);
 	List<StudentEntity> findByClassDepartmentsIn(List<ClassDepartmentEntity> classDepartments);
 	List<StudentEntity> findByParents(ParentEntity parrent);
+	@Query(value = "INSERT INTO student_parent (id_student, id_parent) VALUES (?st, ?pr)", nativeQuery = true)
+	Boolean updateStudentParent(Integer st, Integer pr);
 }

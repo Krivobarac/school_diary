@@ -63,6 +63,12 @@ public class ClassDepartmentEntity {
     joinColumns = { @JoinColumn(name = "class_department_id", referencedColumnName = "idClassDepartment") },
     inverseJoinColumns = { @JoinColumn(name = "student_id", referencedColumnName = "id_user") })
 	private List<StudentEntity> students = new ArrayList<>();
+	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
+	@JoinColumn(name = "id_student", nullable = false)
+	@NotNull
+	@JsonBackReference
+	@JsonView(Views.User.class)
+	private StudentEntity student;
 	@Version
 	@JsonIgnore
 	private Integer version;
@@ -76,6 +82,7 @@ public class ClassDepartmentEntity {
 		this.school = school;
 		this.schoolYear = schoolYear;
 		this.students.add(student);
+		this.student = student;
 	}
 
 	public Integer getIdClassDepartment() {

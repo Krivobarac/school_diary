@@ -159,14 +159,13 @@ public class TeacherController {
 	@Secured(value = {"ROLE_ADMIN", "ROLE_TEACHER", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.PUT, value = "/{id}")
 	public ResponseEntity<?> updateTeacherById(@Valid @RequestBody(required = false) TeacherDTO teacherDto, BindingResult result, @PathVariable Integer id) {
-		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
 		if(teacherDto == null) { return new ResponseEntity<RestError>(new RestError(450, "Exception occurred: " + new Exception().getMessage()), HttpStatus.BAD_REQUEST);}
 		try {
 			TeacherEntity teacher = teacherRepository.findById(id).get();
 			Integer addressId = teacherRepository.findById(id).get().getAddress().getIdAddress();
 			SubjectEntity subject = subjectRepository.findBySubjectName(teacherDto.getSubject());
 			AddressEntity address = new AddressEntity(new StreetEntity(teacherDto.getNameStreet()), new HouseNumberEntity(teacherDto.getHouseNumber()), new CityEntity(teacherDto.getNameCity(), new BoroughEntity(teacherDto.getNameBorough(), teacherDto.getNumberBorough())));
-			if (subject == null) {return new ResponseEntity<RestError>(new RestError(452, "Exception occurred: Morate uneti ispravan naziv predmetaSkola sa datim brojem ne postoji!"), HttpStatus.BAD_REQUEST);}
+			if (subject == null) {return new ResponseEntity<RestError>(new RestError(452, "Exception occurred: Morate uneti ispravan naziv predmetaSkola sa datim brojem ne postoji!"), HttpStatus.NOT_ACCEPTABLE);}
 			teacher.setFirstName(teacherDto.getFirstName());
 			teacher.setLastName(teacherDto.getLastName());
 			teacher.setJmbg(teacherDto.getJmbg());;

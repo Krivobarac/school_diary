@@ -31,10 +31,17 @@ public class ParentEntity extends UserEntity{
 	
 	public ParentEntity() {}
 
+	public ParentEntity(String firstName, String lastName, String jmbg, IGender gender, AccountEntity account, AddressEntity address, String email, StudentEntity student) {
+		super(firstName, lastName, jmbg, gender, account, address);
+		this.email = email;
+		this.students.add(student);
+	}
+	
 	public ParentEntity(String firstName, String lastName, String jmbg, IGender gender, AccountEntity account, AddressEntity address, String email) {
 		super(firstName, lastName, jmbg, gender, account, address);
 		this.email = email;
 	}
+
 
 	public List<StudentEntity> getStudents() {
 		return students;
@@ -42,6 +49,10 @@ public class ParentEntity extends UserEntity{
 
 	public void setStudents(List<StudentEntity> students) {
 		this.students = students;
+	}
+	
+	public void setStudent(StudentEntity student) {
+		this.students.add(student);
 	}
 
 	public String getEmail() {

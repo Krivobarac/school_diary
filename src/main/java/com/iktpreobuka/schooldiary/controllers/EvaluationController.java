@@ -145,7 +145,7 @@ public class EvaluationController {
 			}
 			return new ResponseEntity<List<EvaluationEntity>>(evaluations, HttpStatus.OK);
 		} catch (NoSuchElementException e) {
-			return new ResponseEntity<RestError>(new RestError(404, "Nema rezultata"), HttpStatus.NOT_FOUND);
+			return new ResponseEntity<RestError>(new RestError(405, "Nema rezultata"), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
 			return new ResponseEntity<RestError>(new RestError(500, "Exception occurred: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

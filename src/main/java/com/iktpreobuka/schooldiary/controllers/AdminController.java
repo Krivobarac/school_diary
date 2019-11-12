@@ -66,7 +66,7 @@ public class AdminController {
 	private ErrorMessage errMsg;
 	
 	
-	@Secured(value = {"ROLE_ADMIN", "ROLE_DIRECTOR"})
+	@Secured(value = {"ROLE_SUPERADMIN", "ROLE_ADMIN", "ROLE_DIRECTOR"})
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> addNewAdmin(@Valid @RequestBody(required = false) AdminDTO adminDto, BindingResult result){
 		if(result.hasErrors()) {return new ResponseEntity<>(errMsg.createErrorMessage(result), HttpStatus.BAD_REQUEST);}
